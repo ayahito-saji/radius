@@ -8,6 +8,7 @@ class Radius
                 constructor: {
                     arguments: [],
                     statements: [
+                        [["=", "="], [[:IDENTIFY, "self"], [".", "."], [:IDENTIFY, "name"]], [:IDENTIFY, "taro"]]
                     ]
                 }
             }
@@ -19,15 +20,24 @@ class Radius
         }
     }
   end
-  def run
+  def process
     # プログラムメモリ
     @objects = {}
-    @program_pointer = [["phases", "main", 0]]
+    @program_pointer = [[:phases, :main, 0]]
 
+    pp = @program_pointer[-1]
+    case statement[0]
+      when "="
+
+    end
+  end
+  def run
+    self.analysis
+    self.process
   end
 end
 
+# Radiusの動かし方
 radius = Radius.new
-radius.code = ""
-radius.analysis
+# radius.code = ""
 radius.run
