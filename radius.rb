@@ -1,34 +1,39 @@
 class Radius
+  require File.dirname(__FILE__) + '/radius_parser'
+
   attr_accessor(:code)
   def analysis
     # @code変数にぶち込まれた文字列コードを構造化したものを@structureに入れる
-    @structure = {
-        classes: {
-            MyRobot: {
-                constructor: {
-                    arguments: [],
-                    statements: [
-                        [["=", "="], [[:IDENTIFY, "self"], [".", "."], [:IDENTIFY, "name"]], [:IDENTIFY, "taro"]]
-                    ]
-                }
-            }
-        },
-        phases: {
-            main: [
-                [["=", "="], [:IDENTIFY, "robot1"], [[".", "."], [:IDENTIFY, "MyRobot"], [:IDENTIFY, "new"]]]
-            ]
-        }
-    }
+    parser = RadiusParser.new
+    @structure = parser.parse(@code)
+    puts("Tree: #{@structure}")
   end
   def process
     # プログラムメモリ
-    @objects = {}
-    @program_pointer = [[:phases, :main, 0]]
+    @objects = {} # オブジェクトは最初存在しない
 
-    pp = @program_pointer[-1]
-    case statement[0]
-      when "="
-
+    puts(evaluate(@structure))
+  end
+  def evaluate(tree)
+    case tree[0]
+      when "+"
+        evaluate(tree[1]) + evaluate(tree[2])
+      when "-"
+        evaluate(tree[1]) - evaluate(tree[2])
+      when "*"
+        evaluate(tree[1]) * evaluate(tree[2])
+      when "/"
+        evaluate(tree[1]) / evaluate(tree[2])
+      when "NUMBER" # 数字リテラル
+        tree[1]
+      when "STMTS" # 複文の処理
+        count = 1
+        last = nil
+        while !tree[count].nil?
+          last = evaluate(tree[count])
+          count += 1
+        end
+        last
     end
   end
   def run
@@ -37,7 +42,14 @@ class Radius
   end
 end
 
-# Radiusの動かし方
-radius = Radius.new
-# radius.code = ""
-radius.run
+if __FILE__ == $0
+  # Radiusの動かし方
+  radius = Radius.new
+  File.open("program.rlb", "r") do |f|
+    radius.code = f.read.chomp
+  end
+
+  p radius.code
+
+  radius.run
+end
