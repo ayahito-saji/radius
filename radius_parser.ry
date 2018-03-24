@@ -13,7 +13,7 @@ class RadiusParser
                 | var_assign
                 | if_stmt
 
-    var_assign  : IDENTIFIER '=' expr ';'                       {result = ['VAR_ASSIGN', val[0], val[2]]}
+    var_assign  : identifier '=' expr ';'                       {result = ['VAR_ASSIGN', val[0], val[2]]}
 
     if_stmt     : IF '(' expr ')' '{' stmts '}' else_stmt       {result = ['IF', val[2], val[5], val[7]]}
                 | IF '(' expr ')' stmt else_stmt                {result = ['IF', val[2], val[4], val[5]]}
@@ -37,15 +37,18 @@ class RadiusParser
                 | func_call
                 | lit
 
-    func_call   : IDENTIFIER '(' list ')'                       {result = ['FUNC_CALL', val[0], val[2]]}
+    func_call   : identifier '(' list ')'                       {result = ['FUNC_CALL', val[0], val[2]]}
 
     list        :                                               {result = []}
                 | expr                                          {result = [val[0]]}
                 | list ',' expr                                 {result << val[2]}
 
     lit         : NUMBER                                        {result = ['NUMBER', val[0]]}
-                | IDENTIFIER                                    {result = ['IDENTIFIER', val[0]]}
+                | identifier                                    {result = val[0]}
                 | STRING                                        {result = ['STRING', val[0]]}
+
+    identifier  : IDENTIFIER                                    {result = ['IDENTIFIER', val[0]]}
+                | identifier
 end
 
 ---- header

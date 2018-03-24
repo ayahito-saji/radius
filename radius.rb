@@ -10,9 +10,10 @@ class Radius
   end
   def process
     # プログラムメモリ
-    @objects = {} # オブジェクトは最初存在しない
+    @variables = {} # オブジェクトは最初存在しない
 
     puts(evaluate(@structure))
+    puts(@variables)
   end
   def evaluate(tree)
     case tree[0]
@@ -34,6 +35,10 @@ class Radius
           count += 1
         end
         last
+      when "VAR_ASSIGN"
+        @variables[tree[1][1]] = evaluate(tree[2])
+      when "IDENTIFIER"
+        @variables[tree[1]]
     end
   end
   def run
