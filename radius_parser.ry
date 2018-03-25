@@ -1,8 +1,9 @@
 class RadiusParser
   prechigh
-  nonassoc '==' '!=' '>' '>=' '<' '<='
   left '*' '/'
   left '+' '-'
+  nonassoc '==' '!=' '>' '>=' '<' '<='
+  left 'else'
   preclow
 
   rule
@@ -27,15 +28,17 @@ class RadiusParser
                 | '-' expr                                      {result = ['-', ["NUMBER", 0], val[1]]}
                 | expr '*' expr                                 {result = ['*', val[0], val[2]]}
                 | expr '/' expr                                 {result = ['/', val[0], val[2]]}
-                | '(' expr ')'                                  {result = val[1]}
                 | expr '==' expr                                {result = ['==', val[0], val[2]]}
                 | expr '!=' expr                                {result = ['!=', val[0], val[2]]}
                 | expr '>' expr                                 {result = ['>', val[0], val[2]]}
                 | expr '>=' expr                                {result = ['>=', val[0], val[2]]}
                 | expr '<' expr                                 {result = ['<', val[0], val[2]]}
                 | expr '<=' expr                                {result = ['<=', val[0], val[2]]}
-                | func_call
+                | primary
+
+    primary     : '(' expr ')'                                  {result = val[1]}
                 | lit
+                | func_call
 
     func_call   : identifier '(' list ')'                       {result = ['FUNC_CALL', val[0], val[2]]}
 
@@ -48,7 +51,6 @@ class RadiusParser
                 | STRING                                        {result = ['STRING', val[0]]}
 
     identifier  : IDENTIFIER                                    {result = ['IDENTIFIER', val[0]]}
-                | identifier
 end
 
 ---- header
@@ -72,15 +74,15 @@ def parse(str)
 
     scanner.scan(/==/) ?                        @q << ["==", "=="] :
     scanner.scan(/!=/) ?                        @q << ["!=", "!="] :
-    scanner.scan(/>/) ?                         @q << [">", ">"] :
     scanner.scan(/>=/) ?                        @q << [">=", ">="] :
-    scanner.scan(/</) ?                         @q << ["<", "<"] :
     scanner.scan(/<=/) ?                        @q << ["<=", "<="] :
+    scanner.scan(/>/) ?                         @q << [">", ">"] :
+    scanner.scan(/</) ?                         @q << ["<", "<"] :
 
     scanner.scan(/./) ?                         @q << [scanner.matched, scanner.matched] :
     (raise "scanner error")
   end
-  puts ("Token: #{@q}")
+  # puts ("Token: #{@q}")
 
   do_parse
 end

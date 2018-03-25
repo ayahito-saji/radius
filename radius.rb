@@ -1,21 +1,24 @@
 class Radius
   require File.dirname(__FILE__) + '/radius_parser'
+  require 'pp'
 
   attr_accessor(:code)
   def analysis
-    # @code変数にぶち込まれた文字列コードを構造化したものを@structureに入れる
     parser = RadiusParser.new
     @structure = parser.parse(@code)
-    puts("Tree: #{@structure}")
+    PP.pp(@structure, $>, 1)
   end
   def process
     # プログラムメモリ
-    @variables = {} # オブジェクトは最初存在しない
+    @variables = {} # 変数オブジェクトは最初存在しない
 
-    puts(evaluate(@structure))
-    puts(@variables)
+    puts ">> #{evaluate(@structure)}"
+    puts @variables
   end
   def evaluate(tree)
+    if tree.nil?
+      return
+    end
     case tree[0]
       when "+"
         evaluate(tree[1]) + evaluate(tree[2])
@@ -25,7 +28,25 @@ class Radius
         evaluate(tree[1]) * evaluate(tree[2])
       when "/"
         evaluate(tree[1]) / evaluate(tree[2])
+      when "=="
+        evaluate(tree[1]) == evaluate(tree[2])
+      when ">="
+        evaluate(tree[1]) >= evaluate(tree[2])
+      when "<="
+        evaluate(tree[1]) <= evaluate(tree[2])
+      when ">"
+        evaluate(tree[1]) > evaluate(tree[2])
+      when "<"
+        evaluate(tree[1]) < evaluate(tree[2])
+      when "IF"
+        if evaluate(tree[1])
+          evaluate(tree[2])
+        else
+          evaluate(tree[3])
+        end
       when "NUMBER" # 数字リテラル
+        tree[1]
+      when "STRING"
         tree[1]
       when "STMTS" # 複文の処理
         count = 1
@@ -54,7 +75,7 @@ if __FILE__ == $0
     radius.code = f.read.chomp
   end
 
-  p radius.code
+  puts radius.code
 
   radius.run
 end
