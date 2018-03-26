@@ -28,6 +28,7 @@ class Radius
         evaluate(tree[1]) * evaluate(tree[2])
       when "/"
         evaluate(tree[1]) / evaluate(tree[2])
+
       when "=="
         evaluate(tree[1]) == evaluate(tree[2])
       when ">="
@@ -38,7 +39,28 @@ class Radius
         evaluate(tree[1]) > evaluate(tree[2])
       when "<"
         evaluate(tree[1]) < evaluate(tree[2])
-      when "IF"
+
+      when "="
+        @variables[tree[1][1]] = evaluate(tree[2])
+      when "+="
+        @variables[tree[1][1]] += evaluate(tree[2])
+      when "-="
+        @variables[tree[1][1]] -= evaluate(tree[2])
+      when "*="
+        @variables[tree[1][1]] *= evaluate(tree[2])
+      when "/="
+        @variables[tree[1][1]] /= evaluate(tree[2])
+
+      when "LOOP"
+        @broke = false
+        while true
+          evaluate(tree[1])
+          if @broke
+            @broke = false
+            break
+          end
+        end
+      when "IF" # if構文
         if evaluate(tree[1])
           evaluate(tree[2])
         else
@@ -46,18 +68,20 @@ class Radius
         end
       when "NUMBER" # 数字リテラル
         tree[1]
-      when "STRING"
+      when "STRING" # 文字列リテラル
         tree[1]
+      when "BREAK"
+        @broke = true
+        nil
       when "STMTS" # 複文の処理
         count = 1
         last = nil
         while !tree[count].nil?
           last = evaluate(tree[count])
+          break if @broke
           count += 1
         end
         last
-      when "VAR_ASSIGN"
-        @variables[tree[1][1]] = evaluate(tree[2])
       when "IDENTIFIER"
         @variables[tree[1]]
     end
