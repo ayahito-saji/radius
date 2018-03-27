@@ -1,5 +1,10 @@
-a = 0;
+n = 5563;
+
+i = 2;
+flag = "prime number";
 loop{
-    a += 1;
-    if(a >= 100) break;
+    if(i == n) break;
+    if(n % i == 0){flag = "no prime number";break;}
+    i += 1;
 }
+flag;

@@ -28,6 +28,8 @@ class Radius
         evaluate(tree[1]) * evaluate(tree[2])
       when "/"
         evaluate(tree[1]) / evaluate(tree[2])
+      when "%"
+        evaluate(tree[1]) % evaluate(tree[2])
 
       when "=="
         evaluate(tree[1]) == evaluate(tree[2])
@@ -50,6 +52,8 @@ class Radius
         @variables[tree[1][1]] *= evaluate(tree[2])
       when "/="
         @variables[tree[1][1]] /= evaluate(tree[2])
+      when "%="
+        @variables[tree[1][1]] %= evaluate(tree[2])
 
       when "LOOP"
         @broke = false

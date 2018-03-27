@@ -1,9 +1,9 @@
 class RadiusParser
   prechigh
-  left '*' '/'
+  left '*' '/' '%'
   left '+' '-'
   nonassoc '==' '!=' '>' '>=' '<' '<='
-  nonassoc '=' '+=' '-=' '*=' '/='
+  nonassoc '=' '+=' '-=' '*=' '/=' '%='
   preclow
 
   rule
@@ -21,6 +21,7 @@ class RadiusParser
                 | identifier '-=' expr                          {result = ['-=', val[0], val[2]]}
                 | identifier '*=' expr                          {result = ['*=', val[0], val[2]]}
                 | identifier '/=' expr                          {result = ['/=', val[0], val[2]]}
+                | identifier '%=' expr                          {result = ['%=', val[0], val[2]]}
 
     if_stmt     : IF '(' expr ')' '{' stmts '}' else_stmt       {result = ['IF', val[2], val[5], val[7]]}
                 | IF '(' expr ')' stmt else_stmt                {result = ['IF', val[2], val[4], val[5]]}
@@ -36,6 +37,7 @@ class RadiusParser
                 | '-' expr                                      {result = ['-', ["NUMBER", 0], val[1]]}
                 | expr '*' expr                                 {result = ['*', val[0], val[2]]}
                 | expr '/' expr                                 {result = ['/', val[0], val[2]]}
+                | expr '%' expr                                 {result = ['%', val[0], val[2]]}
                 | expr '==' expr                                {result = ['==', val[0], val[2]]}
                 | expr '!=' expr                                {result = ['!=', val[0], val[2]]}
                 | expr '>' expr                                 {result = ['>', val[0], val[2]]}
