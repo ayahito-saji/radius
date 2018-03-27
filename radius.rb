@@ -74,6 +74,8 @@ class Radius
         tree[1]
       when "STRING" # 文字列リテラル
         tree[1]
+      when "BOOLEAN" # 真偽値
+        tree[1] == "true" ? true : false
       when "BREAK"
         @broke = true
         nil
