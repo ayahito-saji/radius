@@ -7,16 +7,18 @@ class RadiusParser
   preclow
 
   rule
+    program     : stmts
+
     stmts       :                                               {result = ['STMTS']}
-                | stmts stmt                                    {result << val[1]}
+                | stmts stmt                                    {val[0] << val[1]}
 
     stmt        : expr ';'
+                | identifier '=' func                           {result = ['=', val[0], val[2]]}
                 | var_assign ';'
                 | if_stmt
                 | loop_stmt
                 | BREAK ';'                                     {result = ['BREAK']}
                 | RETURN expr ';'                               {result = ['RETURN', val[1]]}
-                | identifier '=' func                           {result = ['=', val[0], val[2]]}
 
     var_assign  : identifier '=' expr                           {result = ['=', val[0], val[2]]}
                 | identifier '+=' expr                          {result = ['+=', val[0], val[2]]}
@@ -58,14 +60,14 @@ class RadiusParser
 
     list        :                                               {result = []}
                 | expr                                          {result = [val[0]]}
-                | list ',' expr                                 {result << val[2]}
+                | list ',' expr                                 {val[0] << val[2]}
 
     lit         : NUMBER                                        {result = ['NUMBER', val[0]]}
                 | identifier
                 | STRING                                        {result = ['STRING', val[0]]}
                 | BOOLEAN                                       {result = ['BOOLEAN', val[0]]}
 
-    func        : '(' list ')' '{' stmts '}'                    {result = ['FUNCTION', val[1], val[4]]}
+    func        : DEF '(' list ')' '{' stmts '}'                    {result = ['FUNCTION', val[2], val[5]]}
 
     identifier  : IDENTIFIER                                    {result = ['IDENTIFIER', val[0]]}
 end
@@ -86,9 +88,11 @@ def parse(str)
     scanner.scan(/else/) ?                      @q << [:ELSE, "else"] :
     scanner.scan(/loop/) ?                      @q << [:LOOP, "loop"] :
     scanner.scan(/break/) ?                     @q << [:BREAK, "break"] :
-    scanner.scan(/return/) ?                     @q << [:RETURN, "return"] :
+    scanner.scan(/return/) ?                    @q << [:RETURN, "return"] :
+    scanner.scan(/def/) ?                       @q << [:DEF, "def"] :
 
-    scanner.scan(/true|false/) ?                @q << [:BOOLEAN, scanner.matched] :
+
+    scanner.scan(/(true|false)/) ?              @q << [:BOOLEAN, scanner.matched] :
     scanner.scan(/\".*?\"/) ?                   @q << [:STRING, scanner.matched[1..-2]] :
     scanner.scan(/[a-zA-Z_][a-zA-Z0-9_]*/) ?    @q << [:IDENTIFIER, scanner.matched] :
     scanner.scan(/(0|[0-9]*\.[0-9]+|[1-9][0-9]*)/) ?   @q << [:NUMBER, scanner.matched.to_f] :

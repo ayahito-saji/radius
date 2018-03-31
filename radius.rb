@@ -10,7 +10,6 @@ class Radius
   end
   def process
     # プログラムメモリ
-    @variables = {} # 変数オブジェクトは最初存在しない
     @returned = false # return スタック
     lenv = {}
     genv = {}
