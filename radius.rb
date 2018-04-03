@@ -11,60 +11,146 @@ class Radius
   def process
     # プログラムメモリ
     @returned = false # return スタック
-    lenv = {}
-    genv = {}
-    evaluate(@structure, lenv, genv)
-    puts " Local Env: #{lenv}"
-    puts "Global Env: #{genv}"
+    local_env = {}
+    evaluate(@structure, local_env, nil)
+    puts " Local Env: #{local_env}"
   end
-  def evaluate(tree, lenv, genv)
+  def evaluate(tree, local_env, instance_env)
     if tree.nil?
       return
     end
     case tree[0]
       # 式
       when "+"
-        evaluate(tree[1], lenv, genv) + evaluate(tree[2], lenv, genv)
+        objs = [evaluate(tree[1], local_env, instance_env), evaluate(tree[2], local_env, instance_env)]
+        if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
+           (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
+          [:INSTANCE, :NUMBER, {val: objs[0][2][:val]+objs[1][2][:val]}]
+        elsif(objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
+             (objs[1][0] == :INSTANCE && objs[1][1] == :STRING)
+          [:INSTANCE, :STRING, {val: objs[0][2][:val].to_s+objs[1][2][:val]}]
+        elsif(objs[0][0] == :INSTANCE && objs[0][1] == :STRING) &&
+             (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
+          [:INSTANCE, :STRING, {val: objs[0][2][:val]+objs[1][2][:val].to_s}]
+        elsif(objs[0][0] == :INSTANCE && objs[0][1] == :STRING) &&
+             (objs[1][0] == :INSTANCE && objs[1][1] == :STRING)
+          [:INSTANCE, :STRING, {val: objs[0][2][:val]+objs[1][2][:val]}]
+        else
+          raise "Can't do + operator"
+        end
+
       when "-"
-        evaluate(tree[1], lenv, genv) - evaluate(tree[2], lenv, genv)
+        objs = [evaluate(tree[1], local_env, instance_env), evaluate(tree[2], local_env, instance_env)]
+        if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
+           (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
+          [:INSTANCE, :NUMBER, {val: objs[0][2][:val]-objs[1][2][:val]}]
+        else
+          raise "Can't do - operator"
+        end
       when "*"
-        evaluate(tree[1], lenv, genv) * evaluate(tree[2], lenv, genv)
+        objs = [evaluate(tree[1], local_env, instance_env), evaluate(tree[2], local_env, instance_env)]
+        if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
+            (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
+          [:INSTANCE, :NUMBER, {val: objs[0][2][:val]*objs[1][2][:val]}]
+        elsif (objs[0][0] == :INSTANCE && objs[0][1] == :STRING) &&
+              (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
+          [:INSTANCE, :NUMBER, {val: objs[0][2][:val]*objs[1][2][:val]}]
+        else
+          raise "Can't do * operator"
+        end
+
       when "/"
-        evaluate(tree[1], lenv, genv) / evaluate(tree[2], lenv, genv)
+        objs = [evaluate(tree[1], local_env, instance_env), evaluate(tree[2], local_env, instance_env)]
+        if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
+            (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
+          if objs[1][2][:val] != 0
+            [:INSTANCE, :NUMBER, {val: objs[0][2][:val]/objs[1][2][:val]}]
+          else
+            raise "Can't divide by 0"
+          end
+        else
+          raise "Can't do / operator"
+        end
+
       when "%"
-        evaluate(tree[1], lenv, genv) % evaluate(tree[2], lenv, genv)
+        objs = [evaluate(tree[1], local_env, instance_env), evaluate(tree[2], local_env, instance_env)]
+        if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
+            (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
+          if objs[1][2][:val] != 0
+            [:INSTANCE, :NUMBER, {val: objs[0][2][:val]%objs[1][2][:val]}]
+          else
+            raise "Can't divide by 0"
+          end
+        else
+          raise "Can't do % operator"
+        end
 
       # 条件式
       when "=="
-        evaluate(tree[1], lenv, genv) == evaluate(tree[2], lenv, genv)
-      when ">="
-        evaluate(tree[1], lenv, genv) >= evaluate(tree[2], lenv, genv)
-      when "<="
-        evaluate(tree[1], lenv, genv) <= evaluate(tree[2], lenv, genv)
-      when ">"
-        evaluate(tree[1], lenv, genv) > evaluate(tree[2], lenv, genv)
-      when "<"
-        evaluate(tree[1], lenv, genv) < evaluate(tree[2], lenv, genv)
+        objs = [evaluate(tree[1], local_env, instance_env), evaluate(tree[2], local_env, instance_env)]
+        if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
+           (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
+          [:INSTANCE, :BOOLEAN, objs[0][2][:val] == objs[1][2][:val]]
+        elsif (objs[0][0] == :INSTANCE && objs[0][1] == :STRING) &&
+              (objs[1][0] == :INSTANCE && objs[1][1] == :STRING)
+            [:INSTANCE, :BOOLEAN, objs[0][2][:val] == objs[1][2][:val]]
+        elsif (objs[0][0] == :INSTANCE && objs[0][1] == :BOOLEAN) &&
+            (objs[1][0] == :INSTANCE && objs[1][1] == :BOOLEAN)
+          [:INSTANCE, :BOOLEAN, objs[0][2][:val] == objs[1][2][:val]]
+        else
+          [:INSTANCE, :BOOLEAN, objs[0] === objs[1]]
+        end
 
+      when ">="
+        objs = [evaluate(tree[1], local_env, instance_env), evaluate(tree[2], local_env, instance_env)]
+        if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
+           (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
+          [:INSTANCE, :BOOLEAN, objs[0][2][:val] >= objs[1][2][:val]]
+        else
+          raise "Can't do >= operator"
+        end
+      when "<="
+        objs = [evaluate(tree[1], local_env, instance_env), evaluate(tree[2], local_env, instance_env)]
+        if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
+            (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
+          [:INSTANCE, :BOOLEAN, objs[0][2][:val] <= objs[1][2][:val]]
+        else
+          raise "Can't do <= operator"
+        end
+      when ">"
+        objs = [evaluate(tree[1], local_env, instance_env), evaluate(tree[2], local_env, instance_env)]
+        if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
+            (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
+          [:INSTANCE, :BOOLEAN, objs[0][2][:val] > objs[1][2][:val]]
+        else
+          raise "Can't do > operator"
+        end
+      when "<"
+        objs = [evaluate(tree[1], local_env, instance_env), evaluate(tree[2], local_env, instance_env)]
+        if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
+            (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
+          [:INSTANCE, :BOOLEAN, objs[0][2][:val] < objs[1][2][:val]]
+        else
+          raise "Can't do < operator"
+        end
       # 代入式
       when "="
-        lenv[tree[1][1]] = evaluate(tree[2], lenv, genv)
-      when "+="
-        lenv[tree[1][1]] += evaluate(tree[2], lenv, genv)
-      when "-="
-        lenv[tree[1][1]] -= evaluate(tree[2], lenv, genv)
-      when "*="
-        lenv[tree[1][1]] *= evaluate(tree[2], lenv, genv)
-      when "/="
-        lenv[tree[1][1]] /= evaluate(tree[2], lenv, genv)
-      when "%="
-        lenv[tree[1][1]] %= evaluate(tree[2], lenv, genv)
+        if tree[1][1].nil?
+          env = local_env
+        else
+          obj = find_variable(tree[1][1], local_env)
+          case obj[0]
+            when :CLASS
+              env = obj[2]
+          end
+        end
+        env[tree[1][2][1]] = evaluate(tree[2], local_env, instance_env)
 
       # 構文
-      when "LOOP" # loop構文
+      when :LOOP # loop構文
         @broke = false
         while true
-          result = evaluate(tree[1], lenv, genv)
+          result = evaluate(tree[1], local_env, instance_env)
           if @broke
             @broke = false
             break
@@ -72,67 +158,83 @@ class Radius
           return result if @returned
         end
         nil
-      when "IF" # if構文
-        if evaluate(tree[1], lenv, genv)
-          result = evaluate(tree[2], lenv, genv)
+      when :IF # if構文
+        objs = evaluate(tree[1], local_env, instance_env)
+        if !((objs[0] == :INSTANCE && objs[1] == :BOOLEAN && objs[2] == false) ||
+             (objs[0] == :NULL)) # falseまたはnullでないときはtrue
+          result = evaluate(tree[2], local_env, instance_env)
           return result if @returned
         else
-          result = evaluate(tree[3], lenv, genv)
+          result = evaluate(tree[3], local_env, instance_env)
           return result if @returned
         end
         nil
 
       # リテラル
-      when "NUMBER" # 数字リテラル
-        tree[1]
-      when "STRING" # 文字列リテラル
-        tree[1]
-      when "BOOLEAN" # ブール値リテラル
-        tree[1] == "true" ? true : false
+      when :INSTANCE
+        tree
 
-      when "BREAK"
+      when :FUNCTION # 関数定義
+        tree
+      when :FUNC_CALL # 関数呼出
+        if tree[1]
+          obj = find_variable(tree[1], local_env)
+          case obj[0]
+            when :CLASS
+              env = obj[2]
+          end
+        else
+          env = local_env
+        end
+        function = env[tree[2][1]]
+        func_call(function, tree[3], local_env, instance_env)
+      when :BREAK
         @broke = true
         nil
-      when "RETURN"
-        result = evaluate(tree[1], lenv, genv)
+      when :RETURN
+        result = evaluate(tree[1], local_env, instance_env)
         @returned = true
         result
-      when "STMTS" # 複文の処理
-        count = 1
-        while !tree[count].nil?
-          result = evaluate(tree[count], lenv, genv)
+
+      when :VARIABLE # 変数呼び出し
+        return find_variable(tree, local_env)
+      # 複文
+      when :STMTS
+        tree[1].each do |stmt|
+          result = evaluate(stmt, local_env, instance_env)
           break if @broke
           return result if @returned
-          count += 1
         end
         nil
-      when "IDENTIFIER" # 変数参照
-        lenv[tree[1]]
-      when "FUNCTION"
-        tree
-      when "FUNC_CALL"
-        if tree[1][0] == "IDENTIFIER" # 有名関数を実行
-          case tree[1][1]
-            when "print"
-              puts(evaluate(tree[2][0], lenv, genv))
-            else
-              func_call(lenv[tree[1][1]], tree[2], lenv, genv)
-          end
-        else # 無名関数を実行
-          func_call(tree[1], tree[2], lenv, genv)
-        end
+
+      # クラス定義
+      when :CLASS
+        class_env = {}
+        evaluate(tree[2], class_env, nil)
+        [:CLASS, tree[1], class_env]
     end
   end
-  def func_call(function, args, lenv, genv)
-    if function && function[0] == "FUNCTION"
-      local_env = Marshal.load(Marshal.dump(lenv)) # ローカル変数環境を作成
-      params = function[1] # 関数の引数一覧を取得
-      i = 0
-      while params[i] do
-        local_env[params[i][1]] = evaluate(args[i], lenv, genv)
-        i += 1
+  def find_variable(tree, env)
+    if tree[1]
+      obj = find_variable(tree[1], env)
+      case obj[0]
+        when :CLASS
+          new_env = obj[2]
+          new_obj = new_env[tree[2][1]]
+          return new_obj
       end
-      result = evaluate(function[2], local_env, genv)
+    else
+      obj = env[tree[2][1]]
+      return obj
+    end
+  end
+  def func_call(function, args, local_env, instance_env)
+    if function && function[0] == :FUNCTION
+      new_local_env = Marshal.load(Marshal.dump(local_env)) # ローカル変数環境を作成
+      function[1].length.times do |i|
+        new_local_env[function[1][i][1]] = evaluate(args[i], local_env, instance_env)
+      end
+      result = evaluate(function[2], new_local_env, instance_env)
       @returned = false
       result
     else

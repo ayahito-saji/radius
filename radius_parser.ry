@@ -4,72 +4,104 @@ class RadiusParser
   left '+' '-'
   nonassoc '==' '!=' '>' '>=' '<' '<='
   nonassoc '=' '+=' '-=' '*=' '/=' '%='
+  left '&&'
+  left '||'
+  left '.'
   preclow
 
   rule
     program     : stmts
 
-    stmts       :                                               {result = ['STMTS']}
-                | stmts stmt                                    {val[0] << val[1]}
+    stmts       :                                               {result = [:STMTS, []]}
+                | stmts stmt                                    {result[1] << val[1]}
+                | stmts stmt ';'                                {result[1] << val[1]}
 
-    stmt        : expr ';'
-                | identifier '=' func                           {result = ['=', val[0], val[2]]}
-                | var_assign ';'
+    stmt        : var_assign
                 | if_stmt
                 | loop_stmt
-                | BREAK ';'                                     {result = ['BREAK']}
-                | RETURN expr ';'                               {result = ['RETURN', val[1]]}
+                | BREAK                                         {result = [:BREAK]}
+                | RETURN expr                                   {result = [:RETURN, val[1]]}
+                | func_call
 
-    var_assign  : identifier '=' expr                           {result = ['=', val[0], val[2]]}
-                | identifier '+=' expr                          {result = ['+=', val[0], val[2]]}
-                | identifier '-=' expr                          {result = ['-=', val[0], val[2]]}
-                | identifier '*=' expr                          {result = ['*=', val[0], val[2]]}
-                | identifier '/=' expr                          {result = ['/=', val[0], val[2]]}
-                | identifier '%=' expr                          {result = ['%=', val[0], val[2]]}
+    var_assign  : variable '=' expr                             {result = ['=', val[0], val[2]]}
+                | variable '+=' expr                            {result = ['+=', val[0], val[2]]}
+                | variable '-=' expr                            {result = ['-=', val[0], val[2]]}
+                | variable '*=' expr                            {result = ['*=', val[0], val[2]]}
+                | variable '/=' expr                            {result = ['/=', val[0], val[2]]}
+                | variable '%=' expr                            {result = ['%=', val[0], val[2]]}
 
-    if_stmt     : IF '(' expr ')' '{' stmts '}' else_stmt       {result = ['IF', val[2], val[5], val[7]]}
-                | IF '(' expr ')' stmt else_stmt                {result = ['IF', val[2], val[4], val[5]]}
+    if_stmt     : IF expr '{' stmts '}' else_stmt               {result = [:IF, val[1], val[3], val[5]]}
+                | IF expr stmt else_stmt                        {result = [:IF, val[1], val[2], val[3]]}
 
     else_stmt   :
                 | ELSE '{' stmts '}'                            {result = val[2]}
                 | ELSE stmt                                     {result = val[1]}
 
-    loop_stmt   : LOOP '{' stmts '}'                            {result = ['LOOP', val[2]]}
+    loop_stmt   : LOOP '{' stmts '}'                            {result = [:LOOP, val[2]]}
+                | LOOP stmt                                     {result = [:LOOP, val[1]]}
 
     expr        : expr '+' expr                                 {result = ['+', val[0], val[2]]}
                 | expr '-' expr                                 {result = ['-', val[0], val[2]]}
-                | '-' expr                                      {result = ['-', ["NUMBER", 0], val[1]]}
+                | '-' expr                                      {result = ['-', [:INSTANCE, :NUMBER, {val: 0}], val[1]]}
                 | expr '*' expr                                 {result = ['*', val[0], val[2]]}
                 | expr '/' expr                                 {result = ['/', val[0], val[2]]}
                 | expr '%' expr                                 {result = ['%', val[0], val[2]]}
+
                 | expr '==' expr                                {result = ['==', val[0], val[2]]}
                 | expr '!=' expr                                {result = ['!=', val[0], val[2]]}
                 | expr '>' expr                                 {result = ['>', val[0], val[2]]}
                 | expr '>=' expr                                {result = ['>=', val[0], val[2]]}
                 | expr '<' expr                                 {result = ['<', val[0], val[2]]}
                 | expr '<=' expr                                {result = ['<=', val[0], val[2]]}
+
+                | expr '&&' expr                                {reusult = ['&&', val[0], val[2]]}
+                | expr '||' expr                                {reusult = ['||', val[0], val[2]]}
+
                 | primary
 
     primary     : '(' expr ')'                                  {result = val[1]}
                 | lit
+                | object
+
+    lit         : NUMBER                                        {result = [:INSTANCE, :NUMBER, {val: val[0]}]}
+                | STRING                                        {result = [:INSTANCE, :STRING, {val: val[0]}]}
+                | BOOLEAN                                       {result = [:INSTANCE, :BOOLEAN, {val: val[0]}]}
+
+    object      : variable
+                | instance
                 | func_call
+                | func_def
+                | class_def
+                | SELF                                          {result = [:SELF]}
 
-    func_call   : identifier '(' list ')'                       {result = ['FUNC_CALL', val[0], val[2]]}
-                | func '(' list ')'                             {result = ['FUNC_CALL', val[0], val[2]]}
+    variable    : identifier                                    {result = [:VARIABLE, nil, val[0]]}
+                | object '.' identifier                         {result = [:VARIABLE, val[0], val[2]]}
 
+    func_def    : FUNCTION '(' params ')' '{' stmts '}'           {result = [:FUNCTION, val[2], val[5]]}
+                | FUNCTION '{' stmts '}'                        {result = [:FUNCTION, [], val[2]]}
 
-    list        :                                               {result = []}
+    params      :                                               {result = []}
+                | identifier                                    {result = [val[0]]}
+                | params ',' identifier                         {result << val[2]}
+
+    func_call   : identifier '(' args ')'                       {result = [:FUNC_CALL, nil, val[0], val[2]]}
+                | func_def '(' args ')'                         {result = [:FUNC_CALL, nil, val[0], val[2]]}
+                | object '.' identifier '(' args ')'            {result = [:FUNC_CALL, val[0], val[2], val[4]]}
+
+    args        :                                               {result = []}
                 | expr                                          {result = [val[0]]}
-                | list ',' expr                                 {val[0] << val[2]}
+                | args ',' expr                                 {result << val[2]}
 
-    lit         : NUMBER                                        {result = ['NUMBER', val[0]]}
+    class_def   : CLASS '(' expands ')' '{' var_assigns '}'     {result = [:CLASS, val[2], val[5]]}
+                | CLASS '{' var_assigns '}'                     {result = [:CLASS, nil, val[2]]}
+
+    expands     :                                               {result = nil}
                 | identifier
-                | STRING                                        {result = ['STRING', val[0]]}
-                | BOOLEAN                                       {result = ['BOOLEAN', val[0]]}
 
-    func        : DEF '(' list ')' '{' stmts '}'                    {result = ['FUNCTION', val[2], val[5]]}
+    var_assigns :                                               {result = [:STMTS, []]}
+                | var_assigns var_assign                        {result[1] << val[1]}
 
-    identifier  : IDENTIFIER                                    {result = ['IDENTIFIER', val[0]]}
+    identifier  : IDENTIFIER                                    {result = [:IDENTIFIER, val[0]]}
 end
 
 ---- header
@@ -89,13 +121,16 @@ def parse(str)
     scanner.scan(/loop/) ?                      @q << [:LOOP, "loop"] :
     scanner.scan(/break/) ?                     @q << [:BREAK, "break"] :
     scanner.scan(/return/) ?                    @q << [:RETURN, "return"] :
-    scanner.scan(/def/) ?                       @q << [:DEF, "def"] :
+    scanner.scan(/function/) ?                  @q << [:FUNCTION, "function"] :
+    scanner.scan(/class/) ?                     @q << [:CLASS, "class"] :
+    scanner.scan(/self/) ?                      @q << [:SELF, "self"] :
+    scanner.scan(/true/) ?                      @q << [:BOOLEAN, true] :
+    scanner.scan(/false/) ?                     @q << [:BOOLEAN, false] :
 
-
-    scanner.scan(/(true|false)/) ?              @q << [:BOOLEAN, scanner.matched] :
     scanner.scan(/\".*?\"/) ?                   @q << [:STRING, scanner.matched[1..-2]] :
-    scanner.scan(/[a-zA-Z_][a-zA-Z0-9_]*/) ?    @q << [:IDENTIFIER, scanner.matched] :
-    scanner.scan(/(0|[0-9]*\.[0-9]+|[1-9][0-9]*)/) ?   @q << [:NUMBER, scanner.matched.to_f] :
+    scanner.scan(/[a-zA-Z_][a-zA-Z0-9_]*/) ?    @q << [:IDENTIFIER, scanner.matched.to_sym] :
+    scanner.scan(/([0-9]*\.[0-9]+)/) ?          @q << [:NUMBER, scanner.matched.to_f] :
+    scanner.scan(/(0|[1-9][0-9]*)/) ?           @q << [:NUMBER, scanner.matched.to_i] :
 
     scanner.scan(/\+=/) ?                       @q << ["+=", "+="] :
     scanner.scan(/-=/) ?                        @q << ["-=", "-="] :
