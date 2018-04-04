@@ -47,6 +47,7 @@ class Radius
         else
           raise "Can't do - operator"
         end
+
       when "*"
         objs = [evaluate(tree[1], local_env, instance_env), evaluate(tree[2], local_env, instance_env)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
@@ -109,6 +110,7 @@ class Radius
         else
           raise "Can't do >= operator"
         end
+
       when "<="
         objs = [evaluate(tree[1], local_env, instance_env), evaluate(tree[2], local_env, instance_env)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
@@ -117,6 +119,7 @@ class Radius
         else
           raise "Can't do <= operator"
         end
+
       when ">"
         objs = [evaluate(tree[1], local_env, instance_env), evaluate(tree[2], local_env, instance_env)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
@@ -125,6 +128,7 @@ class Radius
         else
           raise "Can't do > operator"
         end
+
       when "<"
         objs = [evaluate(tree[1], local_env, instance_env), evaluate(tree[2], local_env, instance_env)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
@@ -133,6 +137,7 @@ class Radius
         else
           raise "Can't do < operator"
         end
+
       # 代入式
       when "="
         if tree[1][1].nil?
@@ -158,6 +163,7 @@ class Radius
           return result if @returned
         end
         nil
+
       when :IF # if構文
         objs = evaluate(tree[1], local_env, instance_env)
         if !((objs[0] == :INSTANCE && objs[1] == :BOOLEAN && objs[2] == false) ||
@@ -181,12 +187,18 @@ class Radius
           obj = find_variable(tree[1], local_env)
           case obj[0]
             when :CLASS
-              env = obj[2]
+              function = obj[2][tree[2][1]]
           end
         else
-          env = local_env
+          case tree[2][1]
+            when :print
+              obj -
+              puts(evaluate(tree[3][0], local_env, instance_env)[2][:val])
+              return
+            else
+              function = local_env[tree[2][1]]
+          end
         end
-        function = env[tree[2][1]]
         func_call(function, tree[3], local_env, instance_env)
       when :BREAK
         @broke = true

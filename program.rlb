@@ -1,9 +1,1 @@
-Calc = class(){
-    add = function(a, b){
-        return a+b
-    }
-    minus = function(a, b){
-        return a-b
-    }
-}
-a = Calc.minus(3,5)
+print("a");
