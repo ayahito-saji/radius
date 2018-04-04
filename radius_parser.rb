@@ -47,6 +47,10 @@ def parse(str)
     scanner.scan(/>/) ?                         @q << [">", ">"] :
     scanner.scan(/</) ?                         @q << ["<", "<"] :
 
+    scanner.scan(/\&\&/) ?                      @q << ["&&", "&&"] :
+    scanner.scan(/\|\|/) ?                      @q << ["||", "||"] :
+    scanner.scan(/#.+/) ?                       nil :
+
     scanner.scan(/./) ?                         @q << [scanner.matched, scanner.matched] :
     (raise "scanner error")
   end
@@ -739,14 +743,14 @@ module_eval(<<'.,.,', 'radius_parser.ry', 54)
 
 module_eval(<<'.,.,', 'radius_parser.ry', 56)
   def _reduce_36(val, _values, result)
-    reusult = ['&&', val[0], val[2]]
+    result = ['&&', val[0], val[2]]
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'radius_parser.ry', 57)
   def _reduce_37(val, _values, result)
-    reusult = ['||', val[0], val[2]]
+    result = ['||', val[0], val[2]]
     result
   end
 .,.,

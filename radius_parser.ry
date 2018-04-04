@@ -54,8 +54,8 @@ class RadiusParser
                 | expr '<' expr                                 {result = ['<', val[0], val[2]]}
                 | expr '<=' expr                                {result = ['<=', val[0], val[2]]}
 
-                | expr '&&' expr                                {reusult = ['&&', val[0], val[2]]}
-                | expr '||' expr                                {reusult = ['||', val[0], val[2]]}
+                | expr '&&' expr                                {result = ['&&', val[0], val[2]]}
+                | expr '||' expr                                {result = ['||', val[0], val[2]]}
 
                 | primary
 
@@ -143,6 +143,10 @@ def parse(str)
     scanner.scan(/<=/) ?                        @q << ["<=", "<="] :
     scanner.scan(/>/) ?                         @q << [">", ">"] :
     scanner.scan(/</) ?                         @q << ["<", "<"] :
+
+    scanner.scan(/\&\&/) ?                      @q << ["&&", "&&"] :
+    scanner.scan(/\|\|/) ?                      @q << ["||", "||"] :
+    scanner.scan(/#.+/) ?                       nil :
 
     scanner.scan(/./) ?                         @q << [scanner.matched, scanner.matched] :
     (raise "scanner error")
