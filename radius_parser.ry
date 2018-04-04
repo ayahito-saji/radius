@@ -87,6 +87,7 @@ class RadiusParser
     func_call   : identifier '(' args ')'                       {result = [:FUNC_CALL, nil, val[0], val[2]]}
                 | func_def '(' args ')'                         {result = [:FUNC_CALL, nil, val[0], val[2]]}
                 | object '.' identifier '(' args ')'            {result = [:FUNC_CALL, val[0], val[2], val[4]]}
+                | lit '.' identifier '(' args ')'               {result = [:FUNC_CALL, val[0], val[2], val[4]]}
 
     args        :                                               {result = []}
                 | expr                                          {result = [val[0]]}

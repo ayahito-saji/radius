@@ -1,10 +1,10 @@
 Robot = class{
     init = function(name){
-        print("Hey, I am created as Robot:"+name);
+        print("Robot name:"+name);
     }
-    greet = function(){
-        print("Hello")
+    greet = function{
+        return "Hello"
     }
 }
 robo = Robot.new("Taro")
-robo.greet()
+print(robo.greet())

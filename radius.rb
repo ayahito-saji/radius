@@ -9,8 +9,8 @@ class Radius
     PP.pp(@structure, $>, 1)
   end
   def process
-    # プログラムメモリ
-    @returned = false # return スタック
+    @broke = false
+    @returned = false
     local_env = {}
     evaluate(@structure, local_env, nil)
     puts " Local Env: #{local_env}"
@@ -214,7 +214,16 @@ class Radius
               end
             # インスタンスの関数を呼び出す
             when :INSTANCE
-              function = obj[1][2][tree[2][1]]
+              case obj[1]
+                when :NUMBER
+                  puts("this is number")
+                when :BOOLEAN
+                  puts("this is boolean")
+                when :STRING
+                  puts("this is string")
+                else
+                  function = obj[1][2][tree[2][1]]
+              end
           end
         elsif tree[2][0] == :IDENTIFIER # 関数呼び出し
           case tree[2][1]
