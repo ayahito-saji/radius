@@ -11,18 +11,18 @@ class Radius
   def process
     @broke = false
     @returned = false
-    local_env = {}
-    evaluate(@structure, local_env, nil)
-    puts " Local Env: #{local_env}"
+    env = {}
+    evaluate(@structure, env, nil)
+    puts "Env: #{env}"
   end
-  def evaluate(tree, local_env, instance)
+  def evaluate(tree, env, instance)
     if tree.nil?
       return
     end
     case tree[0]
       # 式
       when "+"
-        objs = [evaluate(tree[1], local_env, instance), evaluate(tree[2], local_env, instance)]
+        objs = [evaluate(tree[1], env, instance), evaluate(tree[2], env, instance)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
            (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
           [:INSTANCE, :NUMBER, {val: objs[0][2][:val]+objs[1][2][:val]}]
@@ -40,7 +40,7 @@ class Radius
         end
 
       when "-"
-        objs = [evaluate(tree[1], local_env, instance), evaluate(tree[2], local_env, instance)]
+        objs = [evaluate(tree[1], env, instance), evaluate(tree[2], env, instance)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
            (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
           [:INSTANCE, :NUMBER, {val: objs[0][2][:val]-objs[1][2][:val]}]
@@ -49,7 +49,7 @@ class Radius
         end
 
       when "*"
-        objs = [evaluate(tree[1], local_env, instance), evaluate(tree[2], local_env, instance)]
+        objs = [evaluate(tree[1], env, instance), evaluate(tree[2], env, instance)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
            (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
           [:INSTANCE, :NUMBER, {val: objs[0][2][:val]*objs[1][2][:val]}]
@@ -61,7 +61,7 @@ class Radius
         end
 
       when "/"
-        objs = [evaluate(tree[1], local_env, instance), evaluate(tree[2], local_env, instance)]
+        objs = [evaluate(tree[1], env, instance), evaluate(tree[2], env, instance)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
             (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
           if objs[1][2][:val] != 0
@@ -74,7 +74,7 @@ class Radius
         end
 
       when "%"
-        objs = [evaluate(tree[1], local_env, instance), evaluate(tree[2], local_env, instance)]
+        objs = [evaluate(tree[1], env, instance), evaluate(tree[2], env, instance)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
             (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
           if objs[1][2][:val] != 0
@@ -88,7 +88,7 @@ class Radius
 
       # 条件式
       when "=="
-        objs = [evaluate(tree[1], local_env, instance), evaluate(tree[2], local_env, instance)]
+        objs = [evaluate(tree[1], env, instance), evaluate(tree[2], env, instance)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
            (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
           [:INSTANCE, :BOOLEAN, {val: objs[0][2][:val] == objs[1][2][:val]}]
@@ -103,7 +103,7 @@ class Radius
         end
 
       when ">="
-        objs = [evaluate(tree[1], local_env, instance), evaluate(tree[2], local_env, instance)]
+        objs = [evaluate(tree[1], env, instance), evaluate(tree[2], env, instance)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
            (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
           [:INSTANCE, :BOOLEAN, {val: objs[0][2][:val] >= objs[1][2][:val]}]
@@ -112,7 +112,7 @@ class Radius
         end
 
       when "<="
-        objs = [evaluate(tree[1], local_env, instance), evaluate(tree[2], local_env, instance)]
+        objs = [evaluate(tree[1], env, instance), evaluate(tree[2], env, instance)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
             (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
           [:INSTANCE, :BOOLEAN, {val: objs[0][2][:val] <= objs[1][2][:val]}]
@@ -121,7 +121,7 @@ class Radius
         end
 
       when ">"
-        objs = [evaluate(tree[1], local_env, instance), evaluate(tree[2], local_env, instance)]
+        objs = [evaluate(tree[1], env, instance), evaluate(tree[2], env, instance)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
             (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
           [:INSTANCE, :BOOLEAN, {val: objs[0][2][:val] > objs[1][2][:val]}]
@@ -130,7 +130,7 @@ class Radius
         end
 
       when "<"
-        objs = [evaluate(tree[1], local_env, instance), evaluate(tree[2], local_env, instance)]
+        objs = [evaluate(tree[1], env, instance), evaluate(tree[2], env, instance)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
             (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
           [:INSTANCE, :BOOLEAN, {val: objs[0][2][:val] < objs[1][2][:val]}]
@@ -138,7 +138,7 @@ class Radius
           raise "Can't do < operator"
         end
       when "&&"
-        objs = [evaluate(tree[1], local_env, instance), evaluate(tree[2], local_env, instance)]
+        objs = [evaluate(tree[1], env, instance), evaluate(tree[2], env, instance)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :BOOLEAN) &&
            (objs[1][0] == :INSTANCE && objs[1][1] == :BOOLEAN)
           [:INSTANCE, :BOOLEAN, {val: objs[0][2][:val] && objs[1][2][:val]}]
@@ -146,7 +146,7 @@ class Radius
           raise "Can't do && operator"
         end
       when "||"
-        objs = [evaluate(tree[1], local_env, instance), evaluate(tree[2], local_env, instance)]
+        objs = [evaluate(tree[1], env, instance), evaluate(tree[2], env, instance)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :BOOLEAN) &&
             (objs[1][0] == :INSTANCE && objs[1][1] == :BOOLEAN)
           [:INSTANCE, :BOOLEAN, {val: objs[0][2][:val] || objs[1][2][:val]}]
@@ -157,23 +157,23 @@ class Radius
       # 代入式
       when "="
         if tree[1][1].nil?
-          env = local_env
+          find_env = env
         else
-          obj = find_object(tree[1][1], local_env, instance)
+          obj = find_object(tree[1][1], env, instance)
           case obj[0]
             when :CLASS
-              env = obj[2]
+              find_env = obj[2]
             when :INSTANCE
-              env = obj[2]
+              find_env = obj[2]
           end
         end
-        env[tree[1][2][1]] = evaluate(tree[2], local_env, instance)
+        find_env[tree[1][2][1]] = evaluate(tree[2], env, instance)
 
       # 構文
       when :LOOP # loop構文
         @broke = false
         while true
-          result = evaluate(tree[1], local_env, instance)
+          result = evaluate(tree[1], env, instance)
           if @broke
             @broke = false
             break
@@ -183,13 +183,13 @@ class Radius
         nil
 
       when :IF # if構文
-        objs = evaluate(tree[1], local_env, instance)
+        objs = evaluate(tree[1], env, instance)
         if !((objs[0] == :INSTANCE && objs[1] == :BOOLEAN && objs[2][:val] == false) ||
              (objs[0] == :NULL)) # falseまたはnullでないときはtrue
-          result = evaluate(tree[2], local_env, instance)
+          result = evaluate(tree[2], env, instance)
           return result if @returned
         else
-          result = evaluate(tree[3], local_env, instance)
+          result = evaluate(tree[3], env, instance)
           return result if @returned
         end
         nil
@@ -201,22 +201,22 @@ class Radius
       when :FUNCTION # 関数定義
         tree
       when :FUNC_CALL # 関数呼出
-        return find_object(tree, local_env, instance)
+        return find_object(tree, env, instance)
 
       when :BREAK
         @broke = true
         nil
       when :RETURN
-        result = evaluate(tree[1], local_env, instance)
+        result = evaluate(tree[1], env, instance)
         @returned = true
         result
 
       when :VARIABLE # 変数呼び出し
-        return find_object(tree, local_env, instance)
+        return find_object(tree, env, instance)
       # 複文
       when :STMTS
         tree[1].each do |stmt|
-          result = evaluate(stmt, local_env, instance)
+          result = evaluate(stmt, env, instance)
           break if @broke
           return result if @returned
         end

@@ -1,1 +1,8 @@
-A = class{b = function(){return "!!"}}print(function(a, b){return "Hello "+a+b}(function{return "World"}(),A.new().b()))
+Robot = class{
+    init = function(n, a){
+        self.name = n
+        self.age = a
+    }
+}
+rob = Robot.new("taro", 12)
+a = rob.name
