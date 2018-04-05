@@ -1,11 +1,1 @@
-Robot = class{
-    init = function(name, age){
-        self.name = name
-        self.age = age
-    }
-    greet = function(){
-        return self.name+"デス。"+self.age+"サイデス。"
-    }
-}
-robo = Robot.new("Taro", 20)
-robo.greet()
+A = class{b = function(){return "!!"}}print(function(a, b){return "Hello "+a+b}(function{return "World"}(),A.new().b()))
