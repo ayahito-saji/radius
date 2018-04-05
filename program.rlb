@@ -1,8 +1,1 @@
-Robot = class{
-    init = function(n, a){
-        self.name = n
-        self.age = a
-    }
-}
-rob = Robot.new("taro", 12)
-a = rob.name
+a = 1.5.name()

@@ -159,7 +159,7 @@ class Radius
         if tree[1][1].nil?
           find_env = env
         else
-          obj = find_object(tree[1][1], env, instance)
+          obj = evaluate(tree[1][1], env, instance)
           case obj[0]
             when :CLASS
               find_env = obj[2]
@@ -201,7 +201,52 @@ class Radius
       when :FUNCTION # 関数定義
         tree
       when :FUNC_CALL # 関数呼出
-        return find_object(tree, env, instance)
+        if tree[1] # オブジェクトに付属する関数呼び出し
+          obj = evaluate(tree[1], env, instance)
+          case obj[0]
+            # クラスの関数を呼び出す
+            when :CLASS
+              if tree[2][1] == :new
+                function = obj[2][:init]
+                new_instance = [:INSTANCE, obj, {}]
+                func_call(function, tree[3], env, new_instance) if function
+                return new_instance
+              else
+                function = obj[2][tree[2][1]]
+              end
+            # インスタンスの関数を呼び出す
+            when :INSTANCE
+              case obj[1]
+                when :NUMBER
+                  puts("this is number")
+                when :BOOLEAN
+                  puts("this is boolean")
+                when :STRING
+                  puts("this is string")
+                else
+                  function = obj[1][2][tree[2][1]]
+                  instance = obj
+              end
+          end
+        elsif tree[2][0] == :IDENTIFIER # 関数呼び出し
+          case tree[2][1]
+            # 組み込み関数の実行
+            when :print
+              obj = evaluate(tree[3][0], env, instance)
+              if obj[0]==:INSTANCE && (obj[1]==:NUMBER || obj[1]==:STRING || obj[1]==:BOOLEAN)
+                puts(obj[2][:val])
+              else
+                p obj
+              end
+              return
+            # 有名関数呼び出し
+            else
+              function = env[tree[2][1]]
+          end
+        elsif tree[2][0] == :FUNCTION # 無名関数呼び出し
+          function = tree[2]
+        end
+        func_call(function, tree[3], env, instance)
 
       when :BREAK
         @broke = true
@@ -212,7 +257,22 @@ class Radius
         result
 
       when :VARIABLE # 変数呼び出し
-        return find_object(tree, env, instance)
+        if tree[1]
+          obj = evaluate(tree[1], env, instance)
+          case obj[0]
+            when :CLASS
+              new_env = obj[2]
+              new_obj = new_env[tree[2][1]]
+              return new_obj
+            when :INSTANCE
+              new_env = obj[2]
+              new_obj = new_env[tree[2][1]]
+              return new_obj
+          end
+        else
+          obj = env[tree[2][1]]
+          return obj
+        end
       # 複文
       when :STMTS
         tree[1].each do |stmt|
@@ -227,75 +287,8 @@ class Radius
         class_env = {}
         evaluate(tree[2], class_env, nil)
         [:CLASS, tree[1], class_env]
-    end
-  end
-  def find_object(tree, env, instance) # 変数なら変数を返す
-    if tree[0] == :VARIABLE
-      if tree[1]
-        obj = find_object(tree[1], env, instance)
-        case obj[0]
-          when :CLASS
-            new_env = obj[2]
-            new_obj = new_env[tree[2][1]]
-            return new_obj
-          when :INSTANCE
-            new_env = obj[2]
-            new_obj = new_env[tree[2][1]]
-            return new_obj
-        end
-      else
-        obj = env[tree[2][1]]
-        return obj
-      end
-    elsif tree[0] == :SELF
-      return instance
-    else tree[0] == :FUNC_CALL
-      if tree[1] # オブジェクトに付属する関数呼び出し
-        obj = find_object(tree[1], env, instance)
-        case obj[0]
-          # クラスの関数を呼び出す
-          when :CLASS
-            if tree[2][1] == :new
-              function = obj[2][:init]
-              new_instance = [:INSTANCE, obj, {}]
-              func_call(function, tree[3], env, new_instance) if function
-              return new_instance
-            else
-              function = obj[2][tree[2][1]]
-            end
-          # インスタンスの関数を呼び出す
-          when :INSTANCE
-            case obj[1]
-              when :NUMBER
-                puts("this is number")
-              when :BOOLEAN
-                puts("this is boolean")
-              when :STRING
-                puts("this is string")
-              else
-                function = obj[1][2][tree[2][1]]
-                instance = obj
-            end
-        end
-      elsif tree[2][0] == :IDENTIFIER # 関数呼び出し
-        case tree[2][1]
-          # 組み込み関数の実行
-          when :print
-            obj = evaluate(tree[3][0], env, instance)
-            if obj[0]==:INSTANCE && (obj[1]==:NUMBER || obj[1]==:STRING || obj[1]==:BOOLEAN)
-              puts(obj[2][:val])
-            else
-              p obj
-            end
-            return
-          # 有名関数呼び出し
-          else
-            function = env[tree[2][1]]
-        end
-      elsif tree[2][0] == :FUNCTION # 無名関数呼び出し
-        function = tree[2]
-      end
-      func_call(function, tree[3], env, instance)
+      when :SELF
+        return instance
     end
   end
   def func_call(function, args, local_env, instance)
