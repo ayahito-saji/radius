@@ -51,7 +51,7 @@ class Radius
       when "*"
         objs = [evaluate(tree[1], local_env, instance), evaluate(tree[2], local_env, instance)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
-            (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
+           (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
           [:INSTANCE, :NUMBER, {val: objs[0][2][:val]*objs[1][2][:val]}]
         elsif (objs[0][0] == :INSTANCE && objs[0][1] == :STRING) &&
               (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
