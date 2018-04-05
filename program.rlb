@@ -1,10 +1,11 @@
 Robot = class{
-    init = function(name){
-        print("Robot name:"+name);
+    init = function(name, age){
+        self.name = name
+        self.age = age
     }
-    greet = function{
-        return "Hello"
+    greet = function(){
+        return self.name+"デス。"+self.age+"サイデス。"
     }
 }
-robo = Robot.new("Taro")
-print(robo.greet())
+robo = Robot.new("Taro", 20)
+robo.greet()

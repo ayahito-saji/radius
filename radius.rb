@@ -159,9 +159,11 @@ class Radius
         if tree[1][1].nil?
           env = local_env
         else
-          obj = find_variable(tree[1][1], local_env)
+          obj = find_variable(tree[1][1], local_env, instance)
           case obj[0]
             when :CLASS
+              env = obj[2]
+            when :INSTANCE
               env = obj[2]
           end
         end
@@ -200,7 +202,7 @@ class Radius
         tree
       when :FUNC_CALL # 関数呼出
         if tree[1] # オブジェクトに付属する関数呼び出し
-          obj = find_variable(tree[1], local_env)
+          obj = find_variable(tree[1], local_env, instance)
           case obj[0]
             # クラスの関数を呼び出す
             when :CLASS
@@ -223,6 +225,7 @@ class Radius
                   puts("this is string")
                 else
                   function = obj[1][2][tree[2][1]]
+                  instance = obj
               end
           end
         elsif tree[2][0] == :IDENTIFIER # 関数呼び出し
@@ -232,6 +235,8 @@ class Radius
               obj = evaluate(tree[3][0], local_env, instance)
               if obj[0]==:INSTANCE && (obj[1]==:NUMBER || obj[1]==:STRING || obj[1]==:BOOLEAN)
                 puts(obj[2][:val])
+              else
+                p obj
               end
               return
             # 有名関数呼び出し
@@ -251,7 +256,7 @@ class Radius
         result
 
       when :VARIABLE # 変数呼び出し
-        return find_variable(tree, local_env)
+        return find_variable(tree, local_env, instance)
       # 複文
       when :STMTS
         tree[1].each do |stmt|
@@ -268,18 +273,25 @@ class Radius
         [:CLASS, tree[1], class_env]
     end
   end
-  def find_variable(tree, env)
-    if tree[1]
-      obj = find_variable(tree[1], env)
-      case obj[0]
-        when :CLASS
-          new_env = obj[2]
-          new_obj = new_env[tree[2][1]]
-          return new_obj
+  def find_variable(tree, env, instance)
+    if tree[0] == :VARIABLE
+      if tree[1]
+        obj = find_variable(tree[1], env, instance)
+        case obj[0]
+          when :CLASS
+            new_env = obj[2]
+            new_obj = new_env[tree[2][1]]
+            return new_obj
+          when :INSTANCE
+            new_env = obj[2]
+            new_obj = new_env[tree[2][1]]
+        end
+      else
+        obj = env[tree[2][1]]
+        return obj
       end
-    else
-      obj = env[tree[2][1]]
-      return obj
+    elsif tree[0] == :SELF
+      return instance
     end
   end
   def func_call(function, args, local_env, instance)
