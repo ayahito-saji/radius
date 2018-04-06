@@ -263,14 +263,17 @@ class Radius
             when :CLASS
               new_env = obj[2]
               new_obj = new_env[tree[2][1]]
+              raise("'#{tree[2][1].to_s}' is undefined class") if new_obj.nil?
               return new_obj
             when :INSTANCE
               new_env = obj[2]
               new_obj = new_env[tree[2][1]]
+              raise("'#{tree[2][1].to_s}' is undefined object") if new_obj.nil?
               return new_obj
           end
         else
           obj = env[tree[2][1]]
+          raise("'#{tree[2][1].to_s}' is undefined object") if obj.nil?
           return obj
         end
       # 複文
