@@ -42,7 +42,7 @@ class RadiusParser
 
     expr        : expr '+' expr                                 {result = ['+', val[0], val[2]]}
                 | expr '-' expr                                 {result = ['-', val[0], val[2]]}
-                | '-' expr                                      {result = ['-', [:INSTANCE, :NUMBER, {val: 0}], val[1]]}
+                | '-' expr                                      {result = ['-', [:INSTANCE, :NUMBER, {}, 0], val[1]]}
                 | expr '*' expr                                 {result = ['*', val[0], val[2]]}
                 | expr '/' expr                                 {result = ['/', val[0], val[2]]}
                 | expr '%' expr                                 {result = ['%', val[0], val[2]]}
@@ -63,9 +63,9 @@ class RadiusParser
                 | lit
                 | object
 
-    lit         : NUMBER                                        {result = [:INSTANCE, :NUMBER, {val: val[0]}]}
-                | STRING                                        {result = [:INSTANCE, :STRING, {val: val[0]}]}
-                | BOOLEAN                                       {result = [:INSTANCE, :BOOLEAN, {val: val[0]}]}
+    lit         : NUMBER                                        {result = [:INSTANCE, :NUMBER, {}, val[0]]}
+                | STRING                                        {result = [:INSTANCE, :STRING, {}, val[0]]}
+                | BOOLEAN                                       {result = [:INSTANCE, :BOOLEAN, {}, val[0]]}
 
     object      : variable
                 | instance

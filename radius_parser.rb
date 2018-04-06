@@ -682,7 +682,7 @@ module_eval(<<'.,.,', 'radius_parser.ry', 43)
 
 module_eval(<<'.,.,', 'radius_parser.ry', 44)
   def _reduce_26(val, _values, result)
-    result = ['-', [:INSTANCE, :NUMBER, {val: 0}], val[1]]
+    result = ['-', [:INSTANCE, :NUMBER, {}, 0], val[1]]
     result
   end
 .,.,
@@ -779,21 +779,21 @@ module_eval(<<'.,.,', 'radius_parser.ry', 61)
 
 module_eval(<<'.,.,', 'radius_parser.ry', 65)
   def _reduce_42(val, _values, result)
-    result = [:INSTANCE, :NUMBER, {val: val[0]}]
+    result = [:INSTANCE, :NUMBER, {}, val[0]]
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'radius_parser.ry', 66)
   def _reduce_43(val, _values, result)
-    result = [:INSTANCE, :STRING, {val: val[0]}]
+    result = [:INSTANCE, :STRING, {}, val[0]]
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'radius_parser.ry', 67)
   def _reduce_44(val, _values, result)
-    result = [:INSTANCE, :BOOLEAN, {val: val[0]}]
+    result = [:INSTANCE, :BOOLEAN, {}, val[0]]
     result
   end
 .,.,

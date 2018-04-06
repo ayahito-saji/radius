@@ -25,16 +25,16 @@ class Radius
         objs = [evaluate(tree[1], env, instance), evaluate(tree[2], env, instance)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
            (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
-          [:INSTANCE, :NUMBER, {val: objs[0][2][:val]+objs[1][2][:val]}]
+          [:INSTANCE, :NUMBER, {}, objs[0][3]+objs[1][3]]
         elsif(objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
              (objs[1][0] == :INSTANCE && objs[1][1] == :STRING)
-          [:INSTANCE, :STRING, {val: objs[0][2][:val].to_s+objs[1][2][:val]}]
+          [:INSTANCE, :STRING, {}, objs[0][3].to_s+objs[1][3]]
         elsif(objs[0][0] == :INSTANCE && objs[0][1] == :STRING) &&
              (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
-          [:INSTANCE, :STRING, {val: objs[0][2][:val]+objs[1][2][:val].to_s}]
+          [:INSTANCE, :STRING, {}, objs[0][3]+objs[1][3].to_s]
         elsif(objs[0][0] == :INSTANCE && objs[0][1] == :STRING) &&
              (objs[1][0] == :INSTANCE && objs[1][1] == :STRING)
-          [:INSTANCE, :STRING, {val: objs[0][2][:val]+objs[1][2][:val]}]
+          [:INSTANCE, :STRING, {}, objs[0][3]+objs[1][3]]
         else
           raise "Can't do + operator"
         end
@@ -43,7 +43,7 @@ class Radius
         objs = [evaluate(tree[1], env, instance), evaluate(tree[2], env, instance)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
            (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
-          [:INSTANCE, :NUMBER, {val: objs[0][2][:val]-objs[1][2][:val]}]
+          [:INSTANCE, :NUMBER, {}, objs[0][3]-objs[1][3]]
         else
           raise "Can't do - operator"
         end
@@ -52,10 +52,10 @@ class Radius
         objs = [evaluate(tree[1], env, instance), evaluate(tree[2], env, instance)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
            (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
-          [:INSTANCE, :NUMBER, {val: objs[0][2][:val]*objs[1][2][:val]}]
+          [:INSTANCE, :NUMBER, {}, objs[0][3]*objs[1][3]]
         elsif (objs[0][0] == :INSTANCE && objs[0][1] == :STRING) &&
               (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
-          [:INSTANCE, :NUMBER, {val: objs[0][2][:val]*objs[1][2][:val]}]
+          [:INSTANCE, :NUMBER, {}, objs[0][3]*objs[1][3]]
         else
           raise "Can't do * operator"
         end
@@ -64,8 +64,8 @@ class Radius
         objs = [evaluate(tree[1], env, instance), evaluate(tree[2], env, instance)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
             (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
-          if objs[1][2][:val] != 0
-            [:INSTANCE, :NUMBER, {val: objs[0][2][:val]/objs[1][2][:val]}]
+          if objs[1][3] != 0
+            [:INSTANCE, :NUMBER, {}, objs[0][3]/objs[1][3]]
           else
             raise "Can't divide by 0"
           end
@@ -77,8 +77,8 @@ class Radius
         objs = [evaluate(tree[1], env, instance), evaluate(tree[2], env, instance)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
             (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
-          if objs[1][2][:val] != 0
-            [:INSTANCE, :NUMBER, {val: objs[0][2][:val]%objs[1][2][:val]}]
+          if objs[1][3] != 0
+            [:INSTANCE, :NUMBER, {}, objs[0][3]%objs[1][3]]
           else
             raise "Can't divide by 0"
           end
@@ -91,22 +91,22 @@ class Radius
         objs = [evaluate(tree[1], env, instance), evaluate(tree[2], env, instance)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
            (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
-          [:INSTANCE, :BOOLEAN, {val: objs[0][2][:val] == objs[1][2][:val]}]
+          [:INSTANCE, :BOOLEAN, {}, objs[0][3] == objs[1][3]]
         elsif (objs[0][0] == :INSTANCE && objs[0][1] == :STRING) &&
               (objs[1][0] == :INSTANCE && objs[1][1] == :STRING)
-            [:INSTANCE, :BOOLEAN, {val: objs[0][2][:val] == objs[1][2][:val]}]
+            [:INSTANCE, :BOOLEAN, {}, objs[0][3] == objs[1][3]]
         elsif (objs[0][0] == :INSTANCE && objs[0][1] == :BOOLEAN) &&
             (objs[1][0] == :INSTANCE && objs[1][1] == :BOOLEAN)
-          [:INSTANCE, :BOOLEAN, {val: objs[0][2][:val] == objs[1][2][:val]}]
+          [:INSTANCE, :BOOLEAN, {}, objs[0][3] == objs[1][3]]
         else
-          [:INSTANCE, :BOOLEAN, {val: objs[0] === objs[1]}]
+          [:INSTANCE, :BOOLEAN, {}, objs[0] === objs[1]]
         end
 
       when ">="
         objs = [evaluate(tree[1], env, instance), evaluate(tree[2], env, instance)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
            (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
-          [:INSTANCE, :BOOLEAN, {val: objs[0][2][:val] >= objs[1][2][:val]}]
+          [:INSTANCE, :BOOLEAN, {}, objs[0][3] >= objs[1][3]]
         else
           raise "Can't do >= operator"
         end
@@ -115,7 +115,7 @@ class Radius
         objs = [evaluate(tree[1], env, instance), evaluate(tree[2], env, instance)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
             (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
-          [:INSTANCE, :BOOLEAN, {val: objs[0][2][:val] <= objs[1][2][:val]}]
+          [:INSTANCE, :BOOLEAN, {}, objs[0][3] <= objs[1][3]]
         else
           raise "Can't do <= operator"
         end
@@ -124,7 +124,7 @@ class Radius
         objs = [evaluate(tree[1], env, instance), evaluate(tree[2], env, instance)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
             (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
-          [:INSTANCE, :BOOLEAN, {val: objs[0][2][:val] > objs[1][2][:val]}]
+          [:INSTANCE, :BOOLEAN, {}, objs[0][3] > objs[1][3]]
         else
           raise "Can't do > operator"
         end
@@ -133,7 +133,7 @@ class Radius
         objs = [evaluate(tree[1], env, instance), evaluate(tree[2], env, instance)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
             (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
-          [:INSTANCE, :BOOLEAN, {val: objs[0][2][:val] < objs[1][2][:val]}]
+          [:INSTANCE, :BOOLEAN, {}, objs[0][3] < objs[1][3]]
         else
           raise "Can't do < operator"
         end
@@ -141,7 +141,7 @@ class Radius
         objs = [evaluate(tree[1], env, instance), evaluate(tree[2], env, instance)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :BOOLEAN) &&
            (objs[1][0] == :INSTANCE && objs[1][1] == :BOOLEAN)
-          [:INSTANCE, :BOOLEAN, {val: objs[0][2][:val] && objs[1][2][:val]}]
+          [:INSTANCE, :BOOLEAN, {}, objs[0][3] && objs[1][3]]
         else
           raise "Can't do && operator"
         end
@@ -149,7 +149,7 @@ class Radius
         objs = [evaluate(tree[1], env, instance), evaluate(tree[2], env, instance)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :BOOLEAN) &&
             (objs[1][0] == :INSTANCE && objs[1][1] == :BOOLEAN)
-          [:INSTANCE, :BOOLEAN, {val: objs[0][2][:val] || objs[1][2][:val]}]
+          [:INSTANCE, :BOOLEAN, {}, objs[0][3] || objs[1][3]]
         else
           raise "Can't do || operator"
         end
@@ -184,7 +184,7 @@ class Radius
 
       when :IF # if構文
         objs = evaluate(tree[1], env, instance)
-        if !((objs[0] == :INSTANCE && objs[1] == :BOOLEAN && objs[2][:val] == false) ||
+        if !((objs[0] == :INSTANCE && objs[1] == :BOOLEAN && objs[3] == false) ||
              (objs[0] == :NULL)) # falseまたはnullでないときはtrue
           result = evaluate(tree[2], env, instance)
           return result if @returned
@@ -234,7 +234,7 @@ class Radius
             when :print
               obj = evaluate(tree[3][0], env, instance)
               if obj[0]==:INSTANCE && (obj[1]==:NUMBER || obj[1]==:STRING || obj[1]==:BOOLEAN)
-                puts(obj[2][:val])
+                puts(obj[3])
               else
                 p obj
               end
