@@ -102,6 +102,21 @@ class Radius
           [:INSTANCE, :BOOLEAN, {}, objs[0] === objs[1]]
         end
 
+      when "!="
+        objs = [evaluate(tree[1], env, instance), evaluate(tree[2], env, instance)]
+        if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
+            (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
+          [:INSTANCE, :BOOLEAN, {}, objs[0][3] != objs[1][3]]
+        elsif (objs[0][0] == :INSTANCE && objs[0][1] == :STRING) &&
+            (objs[1][0] == :INSTANCE && objs[1][1] == :STRING)
+          [:INSTANCE, :BOOLEAN, {}, objs[0][3] != objs[1][3]]
+        elsif (objs[0][0] == :INSTANCE && objs[0][1] == :BOOLEAN) &&
+            (objs[1][0] == :INSTANCE && objs[1][1] == :BOOLEAN)
+          [:INSTANCE, :BOOLEAN, {}, objs[0][3] != objs[1][3]]
+        else
+          [:INSTANCE, :BOOLEAN, {}, objs[0] != objs[1]]
+        end
+
       when ">="
         objs = [evaluate(tree[1], env, instance), evaluate(tree[2], env, instance)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&

@@ -1,15 +1,3 @@
-Date = class{
-    init = function(year, month, day, hour, minute, second){
-        self.year = year
-        self.month = month
-        self.day = day
-        self.hour = hour
-        self.minute = minute
-        self.second = second
-    }
-    text = function{
-        return self.year+"/"+self.month+"/"+self.day+" "+function{if(self.hour<10) return "0"+self.hour else return self.hour}()+":"+self.minute+":"+self.second
-    }
+sample_function = function{
+    print("ayahito")
 }
-now = Date.new(1997,4,25,0,0,0)
-print(now.text())
