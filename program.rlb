@@ -1,3 +1,1 @@
-sample_function = function{
-    print("ayahito")
-}
+a = function{}
