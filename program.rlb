@@ -1,3 +1,3 @@
-a = 3
-b = 5
-a + b
+loop{
+    print(input())
+}

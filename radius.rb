@@ -12,7 +12,10 @@ class Radius
     @null_obj = [:INSTANCE, :NULL, nil]
     @broke = false
     @returned = false
-    env = {}
+    env = {
+        "print"=> [[:FUNCTION, [[:IDENTIFIER, "obj"]], [:BUILD_IN, "puts(env['obj'][0][3]);return @null_obj"]], :PUBLIC, :DYNAMIC, :CONSTANT],
+        "input"=> [[:FUNCTION, [], [:BUILD_IN, "return [:INSTANT, :STRING, nil, gets.chomp]"]], :PUBLIC, :DYNAMIC, :CONSTANT]
+    }
     p evaluate(@structure, env, nil)
     puts "Env: #{env}"
   end
@@ -346,13 +349,13 @@ class Radius
       when :FUNC_CALL
         function = evaluate(tree[1], current_env, current_instance)
         args = tree[2]
+        env = Marshal.load(Marshal.dump(current_env))
+        raise "引数の数があっていません。必要な数:#{function[1].length}、現在の数:#{args.length}" if function[1].length != args.length
+        function[1].length.times do |i|
+          env[function[1][i][1]] = [evaluate(args[i], env, current_instance), :PRIVATE]
+        end
         if function && function[0] == :FUNCTION
-          new_env = Marshal.load(Marshal.dump(current_env))
-          raise "引数の数があっていません。必要な数:#{function[1].length}、現在の数:#{args.length}" if function[1].length != args.length
-          function[1].length.times do |i|
-            new_env[function[1][i][1]] = [evaluate(args[i], new_env, current_instance), :PRIVATE]
-          end
-          result = evaluate(function[2], new_env, current_instance)
+          result = evaluate(function[2], env, current_instance)
           @returned = false
           return result
         else
@@ -364,6 +367,9 @@ class Radius
         class_env = {}
         evaluate(tree[2], class_env, nil)
         [:CLASS, tree[1], class_env]
+      when :BUILD_IN
+        env = current_env
+        return eval(tree[1])
     end
   end
   def run
