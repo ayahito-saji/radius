@@ -1,3 +1,13 @@
-loop{
-    print(input())
+Robot = class{
+    const init = function(name){
+        self.name = name
+    }
+    get_name = function(){
+        return sample()
+    }
+    sample = function(){
+        return 1
+    }
+
 }
+print(Robot.get_name())

@@ -66,19 +66,20 @@ class RadiusParser
 
                 | expr '&&' expr                                {result = ['&&', val[0], val[2]]}
                 | expr '||' expr                                {result = ['||', val[0], val[2]]}
-
-                | expr '.' identifier                           {result = [:VARIABLE, val[0], val[2]]}
                 | expr '(' args ')'                             {result = [:FUNC_CALL, val[0], val[2]]}
-                | identifier                                    {result = [:VARIABLE, nil, val[0]]}
                 | expr '[' expr ']'                             {result = [:INDEX, val[0], val[2]]}
 
                 | '!' expr                                      {result = ['!', val[1]]}
 
                 | primary
 
+    variable    : expr '.' identifier                           {result = [:VARIABLE, val[0], val[2]]}
+                | identifier                                    {result = [:VARIABLE, nil, val[0]]}
+
     primary     : '(' expr ')'                                  {result = val[1]}
                 | lit
                 | object
+                | variable
 
     lit         : NUMBER                                        {result = [:INSTANCE, :NUMBER, nil, val[0]]}
                 | STRING                                        {result = [:INSTANCE, :STRING, nil, val[0]]}
@@ -88,9 +89,9 @@ class RadiusParser
                 | NULL                                          {result = [:INSTANCE, :NULL, nil]}
 
     object      : func_def
-                | func_def '(' args ')'                         {result = [:FUNC_CALL, val[0], val[2]]}
                 | class_def
                 | SELF                                          {result = [:SELF]}
+                | NEW variable '(' args ')'                     {result = [:NEW, val[1], val[3]]}
 
     func_def    : FUNCTION '(' params ')' '{' statements '}'    {result = [:FUNCTION, val[2], val[5]]}
                 | FUNCTION '{' statements '}'                   {result = [:FUNCTION, [], val[2]]}
@@ -146,6 +147,8 @@ def parse(str)
     scanner.scan(/const/) ?                     @q << [:CONST, "const"] :
     scanner.scan(/static/) ?                    @q << [:STATIC, "static"] :
     scanner.scan(/null/) ?                      @q << [:NULL, "null"] :
+    scanner.scan(/new/) ?                       @q << [:NEW, "new"] :
+
 
     scanner.scan(/\".*?\"/) ?                   @q << [:STRING, scanner.matched[1..-2]] :
     scanner.scan(/[a-zA-Z_][a-zA-Z0-9_]*/) ?    @q << [:IDENTIFIER, scanner.matched.to_s] :

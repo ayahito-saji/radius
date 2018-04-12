@@ -14,7 +14,8 @@ class Radius
     @returned = false
     env = {
         "print"=> [[:FUNCTION, [[:IDENTIFIER, "obj"]], [:BUILD_IN, "puts(env['obj'][0][3]);return @null_obj"]], :PUBLIC, :DYNAMIC, :CONSTANT],
-        "input"=> [[:FUNCTION, [], [:BUILD_IN, "return [:INSTANT, :STRING, nil, gets.chomp]"]], :PUBLIC, :DYNAMIC, :CONSTANT]
+        "input"=> [[:FUNCTION, [], [:BUILD_IN, "return [:INSTANCE, :STRING, nil, gets.chomp]"]], :PUBLIC, :DYNAMIC, :CONSTANT],
+        "Object"=> [[:CLASS, nil, {}], :PUBLIC, :DYNAMIC, :CONSTANT]
     }
     p evaluate(@structure, env, nil)
     puts "Env: #{env}"
@@ -196,6 +197,16 @@ class Radius
             if address[1].nil?
               save_env = current_env
               save_key = address[2][1]
+            else
+              obj = evaluate(address[1], current_env, current_instance)
+              save_key = address[2][1]
+              if obj[0] == :CLASS && obj[2]
+                save_env = obj[2]
+              elsif obj[0] == :INSTANCE && obj[2]
+                save_env = obj[2]
+              else
+                raise "#{obj[0]}に変数またはメソッドを代入できません"
+              end
             end
             if save_env[save_key] # すでに存在する場合、オプションは変更しない
               raise "定数#{save_key}の値を変更できません" if save_env[save_key][3] == :CONSTANT
@@ -301,30 +312,45 @@ class Radius
         result
 
       when :SELF
+        raise "インスタンス関数ではありません" if current_instance.nil?
         return current_instance
 
       when :VARIABLE # 変数にアクセス
-        if tree[1] # オブジェクトの環境を調べる
+        var_name = tree[2][1]
+        if tree[1]
+          # 上位のオブジェクトを調べる
           obj = evaluate(tree[1], current_env, current_instance)
+          # objには上位のオブジェクトが入っている（すなわち、クラスメソッドやクラス変数を呼ぶ場合はクラス、インスタンスメソッドやインスタンス変数を呼ぶ場合はインスタンスが入っている）
           case obj[0]
             when :CLASS # クラス環境を調べる
               new_env = obj[2]
-              new_var = new_env[tree[2][1]]
-              raise("'#{tree[2][1].to_s}'は定義されていないクラスです") if new_var.nil?
-              new_obj = new_var[0]
+              new_var = new_env[var_name]
+              raise("'#{tree[2][1]}'は定義されていない変数です") if new_var.nil?
+              new_obj = new_var[0] # new_objには、下位のオブジェクトが入っている
               return new_obj
             when :INSTANCE # インスタンス環境を調べる
               new_env = obj[2]
-              new_var = new_env[tree[2][1]]
-              raise("'#{tree[2][1].to_s}'は定義されていないインスタンスです") if new_var.nil?
+              new_var = new_env[var_name]
+              cls = obj[1]
+              while new_var.nil?
+                break if cls.nil? || cls[0] != :CLASS
+                new_env = cls[2]
+                new_var = new_env[var_name]
+                cls = cls[1]
+              end
+              raise("'#{tree[2][1]}'は定義されていない変数です") if new_var.nil?
               new_obj = new_var[0]
+              new_obj = new_obj + [obj] if new_obj[0] == :FUNCTION # 関数オブジェクトならば、インスタンスまたはクラスをくっつけて返す
               return new_obj
           end
         else # 現在の環境を調べる
-          var = current_env[tree[2][1]]
-          raise("'#{tree[2][1].to_s}'は定義されていないオブジェクトです") if var.nil?
-          obj = var[0]
-          return obj
+          var = current_env[var_name]
+          if var
+            obj = var[0]
+            return obj
+          else
+            raise("'#{var_name}'は定義されていない変数です")
+          end
         end
       when :INDEX
         obj = evaluate(tree[1], current_env, current_instance)
@@ -347,15 +373,26 @@ class Radius
         end
 
       when :FUNC_CALL
+        # 関数を取得
         function = evaluate(tree[1], current_env, current_instance)
+        # インスタンスを取得
+        instance = function[3]
+        # 引数を取得
         args = tree[2]
         env = Marshal.load(Marshal.dump(current_env))
-        raise "引数の数があっていません。必要な数:#{function[1].length}、現在の数:#{args.length}" if function[1].length != args.length
-        function[1].length.times do |i|
-          env[function[1][i][1]] = [evaluate(args[i], env, current_instance), :PRIVATE]
+        if function[1].length == args.length
+          args.length.times do |i|
+            env[function[1][i][1]] = [evaluate(args[i], env, current_instance), :PRIVATE]
+          end
+        else
+          raise "引数の数があっていません。必要な数:#{function[1].length}、現在の数:#{args.length}"
         end
+        p "関数データ #{function[2]}"
+        p "変数環境データ #{env}"
+        p "インスタンスデータ #{instance}"
+        # 関数を実行する
         if function && function[0] == :FUNCTION
-          result = evaluate(function[2], env, current_instance)
+          result = evaluate(function[2], env, instance)
           @returned = false
           return result
         else
@@ -367,9 +404,19 @@ class Radius
         class_env = {}
         evaluate(tree[2], class_env, nil)
         [:CLASS, tree[1], class_env]
+
       when :BUILD_IN
         env = current_env
         return eval(tree[1])
+
+      when :NEW
+        cls = evaluate(tree[1], current_env, current_instance)
+        args = tree[2]
+        raise "クラス以外からインスタンスを生成できません" if cls[0] != :CLASS
+        instance = [:INSTANCE, cls, {}]
+        function = cls[2]["init"][0] + [cls]
+        evaluate([:FUNC_CALL, function, args], current_env, current_instance)
+        return instance
     end
   end
   def run
