@@ -31,8 +31,9 @@ def parse(str)
     scanner.scan(/false/) ?                     @q << [:BOOLEAN, false] :
     scanner.scan(/private/) ?                   @q << [:PRIVATE, "private"] :
     scanner.scan(/public/) ?                    @q << [:PUBLIC, "pubic"] :
-    scanner.scan(/final/) ?                     @q << [:FINAL, "final"] :
     scanner.scan(/const/) ?                     @q << [:CONST, "const"] :
+    scanner.scan(/static/) ?                    @q << [:STATIC, "static"] :
+    scanner.scan(/null/) ?                      @q << [:NULL, "null"] :
 
     scanner.scan(/\".*?\"/) ?                   @q << [:STRING, scanner.matched[1..-2]] :
     scanner.scan(/[a-zA-Z_][a-zA-Z0-9_]*/) ?    @q << [:IDENTIFIER, scanner.matched.to_s] :
@@ -857,7 +858,7 @@ module_eval(<<'.,.,', 'radius_parser2.ry', 34)
 
 module_eval(<<'.,.,', 'radius_parser2.ry', 35)
   def _reduce_17(val, _values, result)
-    result = ['=', :NOTHING, :DYNAMIC, :VARIABLE, val[0], val[2]]
+    result = ['=', nil, nil, nil, val[0], val[2]]
     result
   end
 .,.,
@@ -885,7 +886,7 @@ module_eval(<<'.,.,', 'radius_parser2.ry', 39)
 
 module_eval(<<'.,.,', 'radius_parser2.ry', 41)
   def _reduce_21(val, _values, result)
-    result = :NOTHING
+    result = nil
     result
   end
 .,.,
@@ -906,7 +907,7 @@ module_eval(<<'.,.,', 'radius_parser2.ry', 43)
 
 module_eval(<<'.,.,', 'radius_parser2.ry', 45)
   def _reduce_24(val, _values, result)
-    result = :DYNAMIC
+    result = nil
     result
   end
 .,.,
@@ -920,7 +921,7 @@ module_eval(<<'.,.,', 'radius_parser2.ry', 46)
 
 module_eval(<<'.,.,', 'radius_parser2.ry', 48)
   def _reduce_26(val, _values, result)
-    result = :VARIABLE
+    result = nil
     result
   end
 .,.,
@@ -1108,14 +1109,14 @@ module_eval(<<'.,.,', 'radius_parser2.ry', 84)
 
 module_eval(<<'.,.,', 'radius_parser2.ry', 85)
   def _reduce_55(val, _values, result)
-    result = [:INSTANCE, :LIST, nil, val[1]]
+    result = [:LIST_NEW, val[1]]
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'radius_parser2.ry', 86)
   def _reduce_56(val, _values, result)
-    result = [:INSTANCE, :HASH, nil, val[1]]
+    result = [:HASH_NEW, val[1]]
     result
   end
 .,.,
@@ -1168,7 +1169,7 @@ module_eval(<<'.,.,', 'radius_parser2.ry', 97)
 
 module_eval(<<'.,.,', 'radius_parser2.ry', 98)
   def _reduce_65(val, _values, result)
-    result = [val[0], val[2]]
+    result = [[val[0], val[2]]]
     result
   end
 .,.,

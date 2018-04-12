@@ -9,6 +9,7 @@ class Radius
     PP.pp(@structure, $>, 1)
   end
   def process
+    @null_obj = [:INSTANCE, :NULL, nil]
     @broke = false
     @returned = false
     env = {}
@@ -46,7 +47,7 @@ class Radius
              (objs[1][0] == :INSTANCE && objs[1][1] == :STRING)
           [:INSTANCE, :STRING, nil, objs[0][3]+objs[1][3]]
         else
-          raise "Can't do + operator"
+          raise "'+'演算子が適用できません"
         end
 
       when "-"
@@ -55,7 +56,7 @@ class Radius
            (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
           [:INSTANCE, :NUMBER, nil, objs[0][3]-objs[1][3]]
         else
-          raise "Can't do - operator"
+          raise "'-'演算子が適用できません"
         end
 
       when "*"
@@ -67,7 +68,7 @@ class Radius
               (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
           [:INSTANCE, :NUMBER, nil, objs[0][3]*objs[1][3]]
         else
-          raise "Can't do * operator"
+          raise "'*'演算子が使用できません"
         end
 
       when "/"
@@ -77,10 +78,10 @@ class Radius
           if objs[1][3] != 0
             [:INSTANCE, :NUMBER, nil, objs[0][3]/objs[1][3]]
           else
-            raise "Can't divide by 0"
+            raise "0で割れません"
           end
         else
-          raise "Can't do / operator"
+          raise "'/'演算子が使用できません"
         end
 
       when "%"
@@ -90,10 +91,10 @@ class Radius
           if objs[1][3] != 0
             [:INSTANCE, :NUMBER, nil, objs[0][3]%objs[1][3]]
           else
-            raise "Can't divide by 0"
+            raise "0で割った余りを出せません"
           end
         else
-          raise "Can't do % operator"
+          raise "'%'演算子が使用できません"
         end
 
       # 条件式
@@ -133,7 +134,7 @@ class Radius
            (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
           [:INSTANCE, :BOOLEAN, nil, objs[0][3] >= objs[1][3]]
         else
-          raise "Can't do >= operator"
+          raise "'>='演算子で比較できません"
         end
 
       when "<="
@@ -142,7 +143,7 @@ class Radius
             (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
           [:INSTANCE, :BOOLEAN, nil, objs[0][3] <= objs[1][3]]
         else
-          raise "Can't do <= operator"
+          raise "'<='演算子で比較できません"
         end
 
       when ">"
@@ -151,7 +152,7 @@ class Radius
             (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
           [:INSTANCE, :BOOLEAN, nil, objs[0][3] > objs[1][3]]
         else
-          raise "Can't do > operator"
+          raise "'>'演算子で比較できません"
         end
 
       when "<"
@@ -160,7 +161,7 @@ class Radius
             (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
           [:INSTANCE, :BOOLEAN, nil, objs[0][3] < objs[1][3]]
         else
-          raise "Can't do < operator"
+          raise "'<'演算子で比較できません"
         end
       when "&&"
         objs = [evaluate(tree[1], current_env, current_instance), evaluate(tree[2], current_env, current_instance)]
@@ -168,7 +169,7 @@ class Radius
            (objs[1][0] == :INSTANCE && objs[1][1] == :BOOLEAN)
           [:INSTANCE, :BOOLEAN, nil, objs[0][3] && objs[1][3]]
         else
-          raise "Can't do && operator"
+          raise "'&&'演算子が使用できません"
         end
       when "||"
         objs = [evaluate(tree[1], current_env, current_instance), evaluate(tree[2], current_env, current_instance)]
@@ -176,19 +177,85 @@ class Radius
             (objs[1][0] == :INSTANCE && objs[1][1] == :BOOLEAN)
           [:INSTANCE, :BOOLEAN, nil, objs[0][3] || objs[1][3]]
         else
-          raise "Can't do || operator"
+          raise "'||'演算子が使用できません"
         end
 
       # 代入式
       when "="
-        if tree[2].nil?
-          save_env = current_env
-        else
-          save_env = evaluate(tree[2], current_env, current_instance)[2]
+        # 値
+        val = evaluate(tree[5], current_env, current_instance)
+        # 変数オプション
+        opt = [tree[1], tree[2], tree[3]]
+        # 保存領域
+        address = tree[4]
+        case address[0]
+          when :VARIABLE # 普通の変数に代入の場合
+            if address[1].nil?
+              save_env = current_env
+              save_key = address[2][1]
+            end
+            if save_env[save_key] # すでに存在する場合、オプションは変更しない
+              raise "定数#{save_key}の値を変更できません" if save_env[save_key][3] == :CONSTANT
+              save_env[save_key][0] = val
+              save_env[save_key][1] = opt[0] if opt[0]
+              save_env[save_key][2] = opt[1] if opt[1]
+              save_env[save_key][3] = opt[2] if opt[2]
+            else # まだ存在しない場合、オプションまで設定する
+              opt[0] ||= :NOTHING
+              opt[1] ||= :DYNAMIC
+              opt[2] ||= :VARIABLE
+              save_env[save_key] = [val] + opt
+            end
+          when :INDEX # 配列またはハッシュに代入の場合
+            raise "配列またはハッシュの特定の要素のみを#{opt[0]}にすることはできません。" if opt[0]
+            raise "配列またはハッシュの特定の要素のみを#{opt[1]}にすることはできません。" if opt[1]
+            raise "配列またはハッシュの特定の要素のみを#{opt[2]}にすることはできません。" if opt[2]
+            obj = evaluate(address[1], current_env, current_instance)
+            index = evaluate(address[2], current_env, current_instance)
+            if obj[0] == :INSTANCE && obj[1] == :LIST
+              if index[0] == :INSTANCE && index[1] == :NUMBER
+                (index[3] - obj[3].length).times do obj[3] << @null_obj end # 要素数より多いインデックスが与えられた場合、その間をnullで埋める
+                obj[3][index[3]] = val
+              else
+                raise "配列のインデックスは数字でなければなりません"
+              end
+            elsif obj[0] == :INSTANCE && obj[1] == :HASH
+              if (index[0] == :INSTANCE && index[1] == :NUMBER) ||
+                 (index[0] == :INSTANCE && index[1] == :STRING)
+                obj[3][index[3]] = val
+              else
+                raise "ハッシュのキーは数字または文字列でなければなりません"
+              end
+            else
+              raise "リストまたはハッシュではないオブジェクトです"
+            end
         end
-        val = evaluate(tree[1], current_env, current_instance)
-        save_env[tree[3][1]] = [val, tree[4]]
         return val
+
+      # 配列またはハッシュ構築子
+      when :LIST_NEW
+        list = []
+        tree[1].each do |obj|
+          list << evaluate(obj, current_env, current_instance)
+        end
+        [:INSTANCE, :LIST, nil, list]
+      when :HASH_NEW
+        hash = {}
+        tree[1].each do |item|
+          key = evaluate(item[0], current_env, current_instance)
+          value = evaluate(item[1], current_env, current_instance)
+
+          if key[0] == :INSTANCE && key[1] == :STRING
+            hash[key[3]] = value
+          elsif key[0] == :INSTANCE && key[1] == :NUMBER
+              hash[key[3]] = value
+          elsif key[0] == :INSTANCE
+            raise "#{key[1]}はキーとして登録できません"
+          else
+            raise "#{key[0]}はキーとして登録できません"
+          end
+        end
+        [:INSTANCE, :HASH, nil, hash]
 
       # 構文
       when :LOOP # loop構文
@@ -218,7 +285,7 @@ class Radius
       when :INSTANCE
         tree
 
-      when :FUNCTION # 関数定義
+      when :FUNCTION
         tree
 
       when :BREAK
@@ -240,30 +307,56 @@ class Radius
             when :CLASS # クラス環境を調べる
               new_env = obj[2]
               new_var = new_env[tree[2][1]]
-              raise("'#{tree[2][1].to_s}' is undefined object in class") if new_var.nil?
+              raise("'#{tree[2][1].to_s}'は定義されていないクラスです") if new_var.nil?
               new_obj = new_var[0]
               return new_obj
             when :INSTANCE # インスタンス環境を調べる
               new_env = obj[2]
               new_var = new_env[tree[2][1]]
-              raise("'#{tree[2][1].to_s}' is undefined object in instant") if new_var.nil?
+              raise("'#{tree[2][1].to_s}'は定義されていないインスタンスです") if new_var.nil?
               new_obj = new_var[0]
               return new_obj
           end
         else # 現在の環境を調べる
           var = current_env[tree[2][1]]
-          raise("'#{tree[2][1].to_s}' is undefined object") if var.nil?
+          raise("'#{tree[2][1].to_s}'は定義されていないオブジェクトです") if var.nil?
           obj = var[0]
           return obj
         end
+      when :INDEX
+        obj = evaluate(tree[1], current_env, current_instance)
+        index = evaluate(tree[2], current_env, current_instance)
+        if obj[0] == :INSTANCE && obj[1] == :LIST
+          if index[0] == :INSTANCE && index[1] == :NUMBER
+            return obj[3][index[3]]
+          else
+            raise "配列のインデックスは数字でなければなりません"
+          end
+        elsif obj[0] == :INSTANCE && obj[1] == :HASH
+          if (index[0] == :INSTANCE && index[1] == :NUMBER) ||
+             (index[0] == :INSTANCE && index[1] == :STRING)
+            return obj[3][index[3]]
+          else
+            raise "ハッシュのキーは数字または文字列でなければなりません"
+          end
+        else
+          raise "リストまたはハッシュではないオブジェクトです"
+        end
+
       when :FUNC_CALL
         function = evaluate(tree[1], current_env, current_instance)
         args = tree[2]
         if function && function[0] == :FUNCTION
           new_env = Marshal.load(Marshal.dump(current_env))
-          return func_call(function, args, new_env, current_instance)
+          raise "引数の数があっていません。必要な数:#{function[1].length}、現在の数:#{args.length}" if function[1].length != args.length
+          function[1].length.times do |i|
+            new_env[function[1][i][1]] = [evaluate(args[i], new_env, current_instance), :PRIVATE]
+          end
+          result = evaluate(function[2], new_env, current_instance)
+          @returned = false
+          return result
         else
-          raise("undefined function is called")
+          raise("定義されていない関数、または関数でないオブジェクトが関数として呼び出されました")
         end
 
       # クラス定義
@@ -272,16 +365,6 @@ class Radius
         evaluate(tree[2], class_env, nil)
         [:CLASS, tree[1], class_env]
     end
-  end
-  # 関数を実際に実行する
-  def func_call(function, args, env, instance)
-    raise "No match args length:needs #{function[2].length}, real #{args.length}" if function[1].length != args.length
-    function[1].length.times do |i|
-      env[function[2][i][1]] = [evaluate(args[i], env, instance), :PRIVATE]
-    end
-    result = evaluate(function[1], env, instance)
-    @returned = false
-    return result
   end
   def run
     self.analysis
