@@ -41,16 +41,16 @@ class Radius
         objs = [evaluate(tree[1], current_env, parent_object), evaluate(tree[2], current_env, parent_object)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
            (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
-          [:INSTANCE, :NUMBER, nil, objs[0][3]+objs[1][3]]
+          return [:INSTANCE, :NUMBER, nil, objs[0][3]+objs[1][3]]
         elsif(objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
              (objs[1][0] == :INSTANCE && objs[1][1] == :STRING)
-          [:INSTANCE, :STRING, nil, objs[0][3].to_s+objs[1][3]]
+          return [:INSTANCE, :STRING, nil, objs[0][3].to_s+objs[1][3]]
         elsif(objs[0][0] == :INSTANCE && objs[0][1] == :STRING) &&
              (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
-          [:INSTANCE, :STRING, nil, objs[0][3]+objs[1][3].to_s]
+          return [:INSTANCE, :STRING, nil, objs[0][3]+objs[1][3].to_s]
         elsif(objs[0][0] == :INSTANCE && objs[0][1] == :STRING) &&
              (objs[1][0] == :INSTANCE && objs[1][1] == :STRING)
-          [:INSTANCE, :STRING, nil, objs[0][3]+objs[1][3]]
+          return [:INSTANCE, :STRING, nil, objs[0][3]+objs[1][3]]
         else
           raise "'+'演算子が適用できません"
         end
@@ -59,7 +59,7 @@ class Radius
         objs = [evaluate(tree[1], current_env, parent_object), evaluate(tree[2], current_env, parent_object)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
            (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
-          [:INSTANCE, :NUMBER, nil, objs[0][3]-objs[1][3]]
+          return [:INSTANCE, :NUMBER, nil, objs[0][3]-objs[1][3]]
         else
           raise "'-'演算子が適用できません"
         end
@@ -68,10 +68,10 @@ class Radius
         objs = [evaluate(tree[1], current_env, parent_object), evaluate(tree[2], current_env, parent_object)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
            (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
-          [:INSTANCE, :NUMBER, nil, objs[0][3]*objs[1][3]]
+          return [:INSTANCE, :NUMBER, nil, objs[0][3]*objs[1][3]]
         elsif (objs[0][0] == :INSTANCE && objs[0][1] == :STRING) &&
               (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
-          [:INSTANCE, :NUMBER, nil, objs[0][3]*objs[1][3]]
+          return [:INSTANCE, :NUMBER, nil, objs[0][3]*objs[1][3]]
         else
           raise "'*'演算子が使用できません"
         end
@@ -81,7 +81,7 @@ class Radius
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
             (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
           if objs[1][3] != 0
-            [:INSTANCE, :NUMBER, nil, objs[0][3]/objs[1][3]]
+            return [:INSTANCE, :NUMBER, nil, objs[0][3]/objs[1][3]]
           else
             raise "0で割れません"
           end
@@ -94,7 +94,7 @@ class Radius
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
             (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
           if objs[1][3] != 0
-            [:INSTANCE, :NUMBER, nil, objs[0][3]%objs[1][3]]
+            return [:INSTANCE, :NUMBER, nil, objs[0][3]%objs[1][3]]
           else
             raise "0で割った余りを出せません"
           end
@@ -107,37 +107,37 @@ class Radius
         objs = [evaluate(tree[1], current_env, parent_object), evaluate(tree[2], current_env, parent_object)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
            (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
-          [:INSTANCE, :BOOLEAN, nil, objs[0][3] == objs[1][3]]
+          return [:INSTANCE, :BOOLEAN, nil, objs[0][3] == objs[1][3]]
         elsif (objs[0][0] == :INSTANCE && objs[0][1] == :STRING) &&
               (objs[1][0] == :INSTANCE && objs[1][1] == :STRING)
-            [:INSTANCE, :BOOLEAN, nil, objs[0][3] == objs[1][3]]
+          return [:INSTANCE, :BOOLEAN, nil, objs[0][3] == objs[1][3]]
         elsif (objs[0][0] == :INSTANCE && objs[0][1] == :BOOLEAN) &&
             (objs[1][0] == :INSTANCE && objs[1][1] == :BOOLEAN)
-          [:INSTANCE, :BOOLEAN, nil, objs[0][3] == objs[1][3]]
+          return [:INSTANCE, :BOOLEAN, nil, objs[0][3] == objs[1][3]]
         else
-          [:INSTANCE, :BOOLEAN, nil, objs[0] === objs[1]]
+          return [:INSTANCE, :BOOLEAN, nil, objs[0] === objs[1]]
         end
 
       when "!="
         objs = [evaluate(tree[1], current_env, parent_object), evaluate(tree[2], current_env, parent_object)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
             (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
-          [:INSTANCE, :BOOLEAN, nil, objs[0][3] != objs[1][3]]
+          return [:INSTANCE, :BOOLEAN, nil, objs[0][3] != objs[1][3]]
         elsif (objs[0][0] == :INSTANCE && objs[0][1] == :STRING) &&
             (objs[1][0] == :INSTANCE && objs[1][1] == :STRING)
-          [:INSTANCE, :BOOLEAN, nil, objs[0][3] != objs[1][3]]
+          return [:INSTANCE, :BOOLEAN, nil, objs[0][3] != objs[1][3]]
         elsif (objs[0][0] == :INSTANCE && objs[0][1] == :BOOLEAN) &&
             (objs[1][0] == :INSTANCE && objs[1][1] == :BOOLEAN)
-          [:INSTANCE, :BOOLEAN, nil, objs[0][3] != objs[1][3]]
+          return [:INSTANCE, :BOOLEAN, nil, objs[0][3] != objs[1][3]]
         else
-          [:INSTANCE, :BOOLEAN, nil, objs[0] != objs[1]]
+          return [:INSTANCE, :BOOLEAN, nil, objs[0] != objs[1]]
         end
 
       when ">="
         objs = [evaluate(tree[1], current_env, parent_object), evaluate(tree[2], current_env, parent_object)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
            (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
-          [:INSTANCE, :BOOLEAN, nil, objs[0][3] >= objs[1][3]]
+          return [:INSTANCE, :BOOLEAN, nil, objs[0][3] >= objs[1][3]]
         else
           raise "'>='演算子で比較できません"
         end
@@ -146,7 +146,7 @@ class Radius
         objs = [evaluate(tree[1], current_env, parent_object), evaluate(tree[2], current_env, parent_object)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
             (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
-          [:INSTANCE, :BOOLEAN, nil, objs[0][3] <= objs[1][3]]
+          return [:INSTANCE, :BOOLEAN, nil, objs[0][3] <= objs[1][3]]
         else
           raise "'<='演算子で比較できません"
         end
@@ -155,7 +155,7 @@ class Radius
         objs = [evaluate(tree[1], current_env, parent_object), evaluate(tree[2], current_env, parent_object)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
             (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
-          [:INSTANCE, :BOOLEAN, nil, objs[0][3] > objs[1][3]]
+          return [:INSTANCE, :BOOLEAN, nil, objs[0][3] > objs[1][3]]
         else
           raise "'>'演算子で比較できません"
         end
@@ -164,7 +164,7 @@ class Radius
         objs = [evaluate(tree[1], current_env, parent_object), evaluate(tree[2], current_env, parent_object)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :NUMBER) &&
             (objs[1][0] == :INSTANCE && objs[1][1] == :NUMBER)
-          [:INSTANCE, :BOOLEAN, nil, objs[0][3] < objs[1][3]]
+          return [:INSTANCE, :BOOLEAN, nil, objs[0][3] < objs[1][3]]
         else
           raise "'<'演算子で比較できません"
         end
@@ -172,7 +172,7 @@ class Radius
         objs = [evaluate(tree[1], current_env, parent_object), evaluate(tree[2], current_env, parent_object)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :BOOLEAN) &&
            (objs[1][0] == :INSTANCE && objs[1][1] == :BOOLEAN)
-          [:INSTANCE, :BOOLEAN, nil, objs[0][3] && objs[1][3]]
+          return [:INSTANCE, :BOOLEAN, nil, objs[0][3] && objs[1][3]]
         else
           raise "'&&'演算子が使用できません"
         end
@@ -180,7 +180,7 @@ class Radius
         objs = [evaluate(tree[1], current_env, parent_object), evaluate(tree[2], current_env, parent_object)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :BOOLEAN) &&
             (objs[1][0] == :INSTANCE && objs[1][1] == :BOOLEAN)
-          [:INSTANCE, :BOOLEAN, nil, objs[0][3] || objs[1][3]]
+          return [:INSTANCE, :BOOLEAN, nil, objs[0][3] || objs[1][3]]
         else
           raise "'||'演算子が使用できません"
         end
@@ -253,7 +253,7 @@ class Radius
         tree[1].each do |obj|
           list << evaluate(obj, current_env, parent_object)
         end
-        [:INSTANCE, :LIST, nil, list]
+        return [:INSTANCE, :LIST, nil, list]
       when :HASH_NEW
         hash = {}
         tree[1].each do |item|
@@ -270,7 +270,7 @@ class Radius
             raise "#{key[0]}はキーとして登録できません"
           end
         end
-        [:INSTANCE, :HASH, nil, hash]
+        return [:INSTANCE, :HASH, nil, hash]
 
       # 構文
       when :LOOP # loop構文
@@ -283,29 +283,31 @@ class Radius
           end
           return result if @returned
         end
-        nil
+        return @null_obj
 
       when :IF # if構文
-        objs = evaluate(tree[1], current_env, parent_object)
-        if !((objs[0] == :INSTANCE && objs[1] == :BOOLEAN && objs[3] == false) ||
-             (objs[0] == :NULL)) # falseまたはnullでないときはtrue
-          result = evaluate(tree[2], current_env, parent_object)
-          return result if @returned
-        else
-          result = evaluate(tree[3], current_env, parent_object)
-          return result if @returned
+        tree[1].each do |if_stmt|
+          if if_stmt
+            condition = evaluate(if_stmt[0], current_env, parent_object)
+            if !((condition[0] == :INSTANCE && condition[1] == :BOOLEAN && condition[3] == false) ||
+                (condition[0] == :NULL)) # falseまたはnullでないときはtrue
+              result = evaluate(if_stmt[1], current_env, parent_object)
+              return result if @returned
+              break
+            end
+          end
         end
-        nil
+        return @null_obj
 
       when :INSTANCE
-        tree
+        return tree
 
       when :FUNCTION
-        tree
+        return tree
 
       when :BREAK
         @broke = true
-        nil
+        return @null_obj
 
       when :RETURN
         result = evaluate(tree[1], current_env, parent_object)

@@ -19,16 +19,23 @@ class RadiusParser
 
     statement   : expr
                 | var_assign
-                | if_stmt
+                | if_els_stmt
                 | loop_stmt
                 | BREAK                                         {result = [:BREAK]}
                 | RETURN                                        {result = [:RETURN, [:INSTANCE, :NULL, nil]]}
                 | RETURN expr                                   {result = [:RETURN, val[1]]}
 
-    if_stmt     : IF expr '{' statements '}' else_stmt          {result = [:IF, val[1], val[3], val[5]]}
+    if_els_stmt : if_stmt elif_stmts els_stmt                   {result = [:IF] + [([val[0]] + val[1] + [val[2]])]}
 
-    else_stmt   :
-                | ELSE '{' statements '}'                       {result = val[2]}
+    if_stmt     : IF expr '{' statements '}'                    {result = [val[1], val[3]]}
+
+    elif_stmts  :                                               {result = []}
+                | elif_stmts elif_stmt                          {result << val[1]}
+    elif_stmt   : ELSE IF expr '{' statements '}'               {result = [val[2], val[4]]}
+                | ELSEIF expr '{' statements '}'                {result = [val[1], val[3]]}
+
+    els_stmt    :
+                | ELSE '{' statements '}'                       {result = [[:INSTANCE, :BOOLEAN, nil, true], val[2]]}
 
     loop_stmt   : LOOP '{' statements '}'                       {result = [:LOOP, val[2]]}
 
@@ -133,6 +140,8 @@ def parse(str)
     scanner.scan(/[\s\n]+/)
 
     scanner.scan(/if/) ?                        @q << [:IF, "if"] :
+    scanner.scan(/elif/) ?                      @q << [:ELSEIF, "elseif"] :
+    scanner.scan(/elsif/) ?                     @q << [:ELSEIF, "elseif"] :
     scanner.scan(/else/) ?                      @q << [:ELSE, "else"] :
     scanner.scan(/loop/) ?                      @q << [:LOOP, "loop"] :
     scanner.scan(/break/) ?                     @q << [:BREAK, "break"] :
