@@ -20,8 +20,7 @@ def parse(str)
     scanner.scan(/[\s\n]+/)
 
     scanner.scan(/if/) ?                        @q << [:IF, "if"] :
-    scanner.scan(/elif/) ?                      @q << [:ELSEIF, "elseif"] :
-    scanner.scan(/elsif/) ?                     @q << [:ELSEIF, "elseif"] :
+    scanner.scan(/(elif|elsif)/) ?              @q << [:ELSEIF, "elseif"] :
     scanner.scan(/else/) ?                      @q << [:ELSE, "else"] :
     scanner.scan(/loop/) ?                      @q << [:LOOP, "loop"] :
     scanner.scan(/break/) ?                     @q << [:BREAK, "break"] :
@@ -43,6 +42,8 @@ def parse(str)
     scanner.scan(/[a-zA-Z_][a-zA-Z0-9_]*/) ?    @q << [:IDENTIFIER, scanner.matched.to_s] :
     scanner.scan(/([0-9]*\.[0-9]+)/) ?          @q << [:NUMBER, scanner.matched.to_f] :
     scanner.scan(/(0|[1-9][0-9]*)/) ?           @q << [:NUMBER, scanner.matched.to_i] :
+
+    scanner.scan(/<-/) ?                        @q << ["=", "="] :
 
     scanner.scan(/\+=/) ?                       @q << ["+=", "+="] :
     scanner.scan(/-=/) ?                        @q << ["-=", "-="] :

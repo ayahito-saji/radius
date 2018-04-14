@@ -17,8 +17,8 @@ class Radius
         "input"=> [[:FUNCTION, [], [:BUILD_IN, "return [:INSTANCE, :STRING, nil, gets.chomp]"]], :PUBLIC, :DYNAMIC, :CONSTANT],
         "Object"=> [[:CLASS, nil, {}], :PUBLIC, :DYNAMIC, :CONSTANT]
     }
-    kernel = [:INSTANCE, nil, env]
-    p evaluate(@structure, {}, kernel)
+    kernel = [:INSTANCE, nil, {}]
+    p evaluate(@structure, env, kernel)
     puts "Env: #{env}"
   end
   def evaluate(tree, current_env, parent_object)
@@ -289,8 +289,8 @@ class Radius
         tree[1].each do |if_stmt|
           if if_stmt
             condition = evaluate(if_stmt[0], current_env, parent_object)
-            if !((condition[0] == :INSTANCE && condition[1] == :BOOLEAN && condition[3] == false) ||
-                (condition[0] == :NULL)) # falseまたはnullでないときはtrue
+            unless (condition[0] == :INSTANCE && condition[1] == :BOOLEAN && condition[3] == false) ||
+                (condition[0] == :NULL) # falseまたはnullでないときはtrue
               result = evaluate(if_stmt[1], current_env, parent_object)
               return result if @returned
               break
@@ -445,7 +445,7 @@ if __FILE__ == $0
   File.open("program.rlb", "r") do |f|
     radius.code = f.read.chomp
   end
-
+  p radius.code
   # 実行
   radius.run
 end

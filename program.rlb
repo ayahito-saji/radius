@@ -1,0 +1,10 @@
+Robot <- class{
+    init = function(func){
+        func()
+    }
+}
+robot <- new Robot(
+    function(){
+        print("Hello!!")
+    }
+)
