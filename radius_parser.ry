@@ -115,11 +115,11 @@ class RadiusParser
                 | expr                                          {result = [val[0]]}
                 | args ',' expr                                 {result << val[2]}
 
-    class_def   : CLASS '(' expands ')' '{' var_assigns '}'     {result = [:CLASS, val[2], val[5]]}
-                | CLASS '{' var_assigns '}'                     {result = [:CLASS, nil, val[2]]}
+    class_def   : CLASS '(' expands ')' '{' var_assigns '}'     {result = [:CLASS_NEW, val[2], val[5]]}
+                | CLASS '{' var_assigns '}'                     {result = [:CLASS_NEW, nil, val[2]]}
 
     expands     :                                               {result = nil}
-                | identifier
+                | identifier                                    {result = [:VARIABLE, nil, val[0]]}
 
     var_assigns :                                               {result = [:STATEMENTS, []]}
                 | var_assigns var_assign                        {result[1] << val[1]}
@@ -181,6 +181,7 @@ def parse(str)
     scanner.scan(/\&\&/) ?                      @q << ["&&", "&&"] :
     scanner.scan(/\|\|/) ?                      @q << ["||", "||"] :
     scanner.scan(/#.*/) ?                       nil :
+    scanner.scan(/\/\/.*/) ?                    nil :
 
     scanner.scan(/./) ?                         @q << [scanner.matched, scanner.matched] :
     (raise "scanner error")

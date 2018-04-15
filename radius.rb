@@ -10,12 +10,13 @@ class Radius
   end
   def process
     @null_obj = [:INSTANCE, :NULL, nil]
+    @object_class = [[:CLASS, nil, {}], :PUBLIC, :DYNAMIC, :CONSTANT]
     @broke = false
     @returned = false
     env = {
         "print"=> [[:FUNCTION, [[:IDENTIFIER, "obj"]], [:BUILD_IN, "puts(env['obj'][0][3]);return @null_obj"]], :PUBLIC, :DYNAMIC, :CONSTANT],
         "input"=> [[:FUNCTION, [], [:BUILD_IN, "return [:INSTANCE, :STRING, nil, gets.chomp]"]], :PUBLIC, :DYNAMIC, :CONSTANT],
-        "Object"=> [[:CLASS, nil, {}], :PUBLIC, :DYNAMIC, :CONSTANT]
+        "Object"=> @object_class
     }
     kernel = [:INSTANCE, nil, {}]
     p evaluate(@structure, env, kernel)
@@ -297,7 +298,7 @@ class Radius
             end
           end
         end
-        return @null_obj
+        return result
 
       when :INSTANCE
         return tree
@@ -408,10 +409,12 @@ class Radius
         end
 
       # クラス定義
-      when :CLASS
+      when :CLASS_NEW
         class_env = {}
         evaluate(tree[2], class_env, nil)
-        [:CLASS, tree[1], class_env]
+        expands_cls = tree[1] ? evaluate(tree[1], current_env, parent_object): @object_class
+        cls = [:CLASS, expands_cls, class_env]
+        return cls
 
       when :BUILD_IN
         env = current_env
