@@ -1,0 +1,7 @@
+i = false
+j = true
+if(!i && j){
+    print("ok")
+}else{
+    print("ng")
+}

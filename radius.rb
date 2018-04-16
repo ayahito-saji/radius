@@ -169,6 +169,13 @@ class Radius
         else
           raise "'<'演算子で比較できません"
         end
+      when "!"
+        obj = evaluate(tree[1], current_env, parent_object)
+        if (obj[0] == :INSTANCE && obj[1] == :BOOLEAN)
+          return [:INSTANCE, :BOOLEAN, nil, !obj[3]]
+        else
+          raise "'!'演算子が使用できません"
+        end
       when "&&"
         objs = [evaluate(tree[1], current_env, parent_object), evaluate(tree[2], current_env, parent_object)]
         if (objs[0][0] == :INSTANCE && objs[0][1] == :BOOLEAN) &&
@@ -313,7 +320,7 @@ class Radius
             end
           end
         end
-        return result
+        return result ? result : @null_obj
 
       when :INSTANCE
         return tree
