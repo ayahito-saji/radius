@@ -17,7 +17,7 @@ Car = class{
 }
 EconomyCar = class(Car){
     init = function(){
-        self.gas = 70
+        super.init()
         self.nenpi = 20
     }
     autoDrive = function(gas){
@@ -33,5 +33,6 @@ car.getGas()
 car.addGas(10)
 car.getGas()
 
+print("")
 e_car = new EconomyCar()
 e_car.autoDrive(30)

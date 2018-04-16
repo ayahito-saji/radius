@@ -10,13 +10,13 @@ class Radius
   end
   def process
     @null_obj = [:INSTANCE, :NULL, nil]
-    @object_class = [[:CLASS, nil, {}], :PUBLIC, :DYNAMIC, :CONSTANT]
+    @object_class = [:CLASS, nil, {}]
     @broke = false
     @returned = false
     env = {
         "print"=> [[:FUNCTION, [[:IDENTIFIER, "obj"]], [:BUILD_IN, "puts(env['obj'][0][3]);return @null_obj"]], :PUBLIC, :DYNAMIC, :CONSTANT],
         "input"=> [[:FUNCTION, [], [:BUILD_IN, "return [:INSTANCE, :STRING, nil, gets.chomp]"]], :PUBLIC, :DYNAMIC, :CONSTANT],
-        "Object"=> @object_class
+        "Object"=> [@object_class, :PUBLIC, :DYNAMIC, :CONSTANT]
     }
     kernel = [:INSTANCE, nil, {}]
     p evaluate(@structure, env, kernel)
@@ -318,7 +318,10 @@ class Radius
       when :SELF
         raise "インスタンス関数ではありません" if parent_object.nil?
         return parent_object
-
+      when :SUPER
+        obj = parent_object.clone
+        obj[1] = obj[1][1]
+        return obj
       when :VARIABLE # 変数にアクセス
         var_name = tree[2][1]
         if tree[1]
