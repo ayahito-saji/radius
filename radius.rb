@@ -286,6 +286,21 @@ class Radius
         end
         return @null_obj
 
+      when :WHILE
+        while true
+          condition = evaluate(tree[1], current_env, parent_object)
+          if (condition[0] == :INSTANCE && condition[1] == :BOOLEAN && condition[3] == false) ||
+              (condition[0] == :NULL)
+            break
+          end
+          result = evaluate(tree[2], current_env, parent_object)
+          if @broke
+            @broke = false
+            break
+          end
+          return result if @returned
+        end
+        return @null_obj
       when :IF # if構文
         tree[1].each do |if_stmt|
           if if_stmt
