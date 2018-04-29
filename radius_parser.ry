@@ -47,11 +47,6 @@ class RadiusParser
 
     var_assign  : access_md static_md const_md var_def '=' expr         {result = ['=', val[0], val[1], val[2], val[3], val[5]]}
                 | var_def '=' expr                                      {result = ['=', nil, nil, nil, val[0], val[2]]}
-                | var_def '+=' expr                                     {result = ['=', nil, nil, nil, val[0], ['+', val[0], val[2]]]}
-                | var_def '-=' expr                                     {result = ['=', nil, nil, nil, val[0], ['-', val[0], val[2]]]}
-                | var_def '*=' expr                                     {result = ['=', nil, nil, nil, val[0], ['*', val[0], val[2]]]}
-                | var_def '/=' expr                                     {result = ['=', nil, nil, nil, val[0], ['/', val[0], val[2]]]}
-                | var_def '%=' expr                                     {result = ['=', nil, nil, nil, val[0], ['%', val[0], val[2]]]}
 
     var_def     : expr '.' identifier                                   {result = [:VARIABLE, val[0], val[2]]}
                 | identifier                                            {result = [:VARIABLE, nil, val[0]]}
@@ -67,27 +62,28 @@ class RadiusParser
     const_md    :                                                       {result = nil}
                 | CONST                                                 {result = :CONSTANT}
 
-    expr        : expr '+' expr                                         {result = ['+', val[0], val[2]]}
-                | expr '-' expr                                         {result = ['-', val[0], val[2]]}
-                | '-' expr                                              {result = ['-', [:INSTANCE, :NUMBER, nil, 0], val[1]]}
-                | expr '*' expr                                         {result = ['*', val[0], val[2]]}
-                | expr '/' expr                                         {result = ['/', val[0], val[2]]}
-                | expr '%' expr                                         {result = ['%', val[0], val[2]]}
+    expr        : expr '+' expr                                         {result = [:FUNC_CALL, [:VARIABLE, val[0], [:IDENTIFIER, "_add"]], [val[2]]]}
+                | expr '-' expr                                         {result = [:FUNC_CALL, [:VARIABLE, val[0], [:IDENTIFIER, "_sub"]], [val[2]]]}
+                | '-' expr                                              {result = [:FUNC_CALL, [:VARIABLE, [:NUMBER_NEW, 0], [:IDENTIFIER, "_sub"]], [val[1]]]}
+                | expr '*' expr                                         {result = [:FUNC_CALL, [:VARIABLE, val[0], [:IDENTIFIER, "_mul"]], [val[2]]]}
+                | expr '/' expr                                         {result = [:FUNC_CALL, [:VARIABLE, val[0], [:IDENTIFIER, "_div"]], [val[2]]]}
+                | expr '%' expr                                         {result = [:FUNC_CALL, [:VARIABLE, val[0], [:IDENTIFIER, "_mod"]], [val[2]]]}
 
-                | expr '==' expr                                        {result = ['==', val[0], val[2]]}
-                | expr '!=' expr                                        {result = ['!=', val[0], val[2]]}
-                | expr '<>' expr                                        {result = ['!=', val[0], val[2]]}
-                | expr '>' expr                                         {result = ['>', val[0], val[2]]}
-                | expr '>=' expr                                        {result = ['>=', val[0], val[2]]}
-                | expr '<' expr                                         {result = ['<', val[0], val[2]]}
-                | expr '<=' expr                                        {result = ['<=', val[0], val[2]]}
+                | expr '==' expr                                        {result = [:FUNC_CALL, [:VARIABLE, val[0], [:IDENTIFIER, "_eq"]], [val[2]]]}
+                | expr '!=' expr                                        {result = [:FUNC_CALL, [:VARIABLE, val[0], [:IDENTIFIER, "_neq"]], [val[2]]]}
+                | expr '<>' expr                                        {result = [:FUNC_CALL, [:VARIABLE, val[0], [:IDENTIFIER, "_neq"]], [val[2]]]}
+                | expr '>' expr                                         {result = [:FUNC_CALL, [:VARIABLE, val[0], [:IDENTIFIER, "_gt"]], [val[2]]]}
+                | expr '>=' expr                                        {result = [:FUNC_CALL, [:VARIABLE, val[0], [:IDENTIFIER, "_gte"]], [val[2]]]}
+                | expr '<' expr                                         {result = [:FUNC_CALL, [:VARIABLE, val[0], [:IDENTIFIER, "_lt"]], [val[2]]]}
+                | expr '<=' expr                                        {result = [:FUNC_CALL, [:VARIABLE, val[0], [:IDENTIFIER, "_lte"]], [val[2]]]}
 
-                | expr '&&' expr                                        {result = ['&&', val[0], val[2]]}
-                | expr '||' expr                                        {result = ['||', val[0], val[2]]}
+                | expr '&&' expr                                        {result = [:FUNC_CALL, [:VARIABLE, val[0], [:IDENTIFIER, "_and"]], [val[2]]]}
+                | expr '||' expr                                        {result = [:FUNC_CALL, [:VARIABLE, val[0], [:IDENTIFIER, "_or"]], [val[2]]]}
+                | '!' expr                                              {result = [:FUNC_CALL, [:VARIABLE, val[1], [:IDENTIFIER, "_not"]], []]}
+
                 | expr '(' args ')'                                     {result = [:FUNC_CALL, val[0], val[2]]}
                 | expr '[' expr ']'                                     {result = [:INDEX, val[0], val[2]]}
 
-                | '!' expr                                              {result = ['!', val[1]]}
 
                 | primary
 
@@ -99,18 +95,17 @@ class RadiusParser
                 | object
                 | variable
 
-    lit         : NUMBER                                                {result = [:INSTANCE, :NUMBER, nil, val[0]]}
-                | STRING                                                {result = [:INSTANCE, :STRING, nil, val[0]]}
-                | BOOLEAN                                               {result = [:INSTANCE, :BOOLEAN, nil, val[0]]}
+    lit         : NUMBER                                                {result = [:NUMBER_NEW, val[0]]}
+                | STRING                                                {result = [:STRING_NEW, val[0]]}
+                | BOOLEAN                                               {result = [:BOOLEAN_NEW, val[0]]}
                 | '[' args ']'                                          {result = [:LIST_NEW, val[1]]}
                 | '{' hash '}'                                          {result = [:HASH_NEW, val[1]]}
-                | NULL                                                  {result = [:INSTANCE, :NULL, nil]}
+                | NULL                                                  {result = [:NULL_NEW]}
 
     object      : func_def
                 | class_def
                 | SELF                                                  {result = [:SELF]}
                 | SUPER                                                 {result = [:SUPER]}
-                | NEW variable '(' args ')'                             {result = [:NEW, val[1], val[3]]}
 
     func_def    : FUNCTION '(' params ')' '{' statements '}'            {result = [:FUNCTION, val[2], val[5]]}
                 | FUNCTION '{' statements '}'                           {result = [:FUNCTION, [], val[2]]}
@@ -169,7 +164,6 @@ def parse(str)
     scanner.scan(/const/) ?                     @q << [:CONST, "const"] :
     scanner.scan(/static/) ?                    @q << [:STATIC, "static"] :
     scanner.scan(/null/) ?                      @q << [:NULL, "null"] :
-    scanner.scan(/new/) ?                       @q << [:NEW, "new"] :
     scanner.scan(/super/) ?                     @q << [:SUPER, "super"]:
     scanner.scan(/base/) ?                      @q << [:SUPER, "super"]:
     scanner.scan(/parent/) ?                    @q << [:SUPER, "super"]:
