@@ -15,35 +15,39 @@ class Radius
         'new'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, self_obj, {}]']], :PUBLIC, :STATIC, :CONSTANT]
     }]
     @number_class = [:CLASS, @object_class, {
-        'new'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, self_obj, nil, argv[0][3]]']], :PUBLIC, :STATIC, :CONSTANT],
-        '_add'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @number_class, nil, self_obj[3]+argv[0][3]];']], :PUBLIC, :DYNAMIC, :CONSTANT],
-        '_sub'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @number_class, nil, self_obj[3]-argv[0][3]];']], :PUBLIC, :DYNAMIC, :CONSTANT],
-        '_mul'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @number_class, nil, self_obj[3]*argv[0][3]];']], :PUBLIC, :DYNAMIC, :CONSTANT],
-        '_div'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @number_class, nil, self_obj[3]/argv[0][3]];']], :PUBLIC, :DYNAMIC, :CONSTANT],
-        '_mod'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @number_class, nil, self_obj[3]%argv[0][3]];']], :PUBLIC, :DYNAMIC, :CONSTANT],
+        'new'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, self_obj, {}, argv[0][3]]']], :PUBLIC, :STATIC, :CONSTANT],
+        '_add'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @number_class, nil, self_obj[3]+argv[0][3]] if(argv[0][1] == :INSTANCE && argv[0][2] == @number_class);return [:INSTANCE, @string_class, nil, self_obj[3].to_s+argv[0][3]] if(argv[0][1] == :INSTANCE && argv[0][2] == @string_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
+        '_sub'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @number_class, nil, self_obj[3]-argv[0][3]] if(argv[0][1] == :INSTANCE && argv[0][2] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
+        '_mul'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @number_class, nil, self_obj[3]*argv[0][3]] if(argv[0][1] == :INSTANCE && argv[0][2] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
+        '_div'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @number_class, nil, self_obj[3]/argv[0][3]] if(argv[0][1] == :INSTANCE && argv[0][2] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
+        '_mod'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @number_class, nil, self_obj[3]%argv[0][3]] if(argv[0][1] == :INSTANCE && argv[0][2] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
         '_eq' => [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]==argv[0][3]];']], :PUBLIC, :DYNAMIC, :CONSTANT],
         '_neq'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]!=argv[0][3]];']], :PUBLIC, :DYNAMIC, :CONSTANT],
-        '_gt' => [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]>argv[0][3]];']], :PUBLIC, :DYNAMIC, :CONSTANT],
-        '_lt' => [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]<argv[0][3]];']], :PUBLIC, :DYNAMIC, :CONSTANT],
-        '_gte'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]>=argv[0][3]];']], :PUBLIC, :DYNAMIC, :CONSTANT],
-        '_lte'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]<=argv[0][3]];']], :PUBLIC, :DYNAMIC, :CONSTANT],
+        '_gt' => [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]>argv[0][3]] if(argv[0][1] == :INSTANCE && argv[0][2] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
+        '_lt' => [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]<argv[0][3]] if(argv[0][1] == :INSTANCE && argv[0][2] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
+        '_gte'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]>=argv[0][3]] if(argv[0][1] == :INSTANCE && argv[0][2] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
+        '_lte'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]<=argv[0][3]] if(argv[0][1] == :INSTANCE && argv[0][2] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
     }]
     @string_class = [:CLASS, @object_class, {
-        'new'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, self_obj, nil, argv[0][3]]']], :PUBLIC, :STATIC, :CONSTANT]
+
+        'new'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, self_obj, {}, argv[0][3]]']], :PUBLIC, :STATIC, :CONSTANT],
+        '_add'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @string_class, nil, self_obj[3]+argv[0][3].to_s];']], :PUBLIC, :DYNAMIC, :CONSTANT],
     }]
     @boolean_class = [:CLASS, @object_class, {
-        'new'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, self_obj, nil, argv[0][3]']], :PUBLIC, :STATIC, :CONSTANT],
+        'new'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, self_obj, {}, argv[0][3]]']], :PUBLIC, :STATIC, :CONSTANT],
         '_not'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, !self_obj[3]]']], :PUBLIC, :STATIC, :CONSTANT],
         '_and'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]&&argv[0][3]]']], :PUBLIC, :STATIC, :CONSTANT],
         '_or' => [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]||argv[0][3]]']], :PUBLIC, :STATIC, :CONSTANT],
     }]
     @list_class = [:CLASS, @object_class, {
-        'new'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, self_obj, nil, argv]']], :PUBLIC, :STATIC, :CONSTANT],
-        '_index'=> [[:FUNCTION, [[:IDENTIFIER, 'index']], [:BUILD_IN, 'return self_obj[3][argv[0][3]]']], :PUBLIC, :DYNAMIC, :CONSTANT]
+        'new'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, self_obj, {}, argv]']], :PUBLIC, :STATIC, :CONSTANT],
+        '_getat'=> [[:FUNCTION, nil, [:BUILD_IN, 'return self_obj[3][argv[0][3]]']], :PUBLIC, :DYNAMIC, :CONSTANT],
+        '_setat'=> [[:FUNCTION, nil, [:BUILD_IN, '(argv[0][3] - self_obj[3].length).times do self_obj[3] << @null_obj end;self_obj[3][argv[0][3]] = argv[1];return argv[1]']], :PUBLIC, :DYNAMIC, :CONSTANT]
     }]
     @hash_class = [:CLASS, @object_class, {
-        'new'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, self_obj, nil, argv[0][3]]']], :PUBLIC, :STATIC, :CONSTANT],
-        '_index'=> [[:FUNCTION, [[:IDENTIFIER, 'index']], [:BUILD_IN, 'return self_obj[3][argv[0][3]]']], :PUBLIC, :DYNAMIC, :CONSTANT]
+        'new'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, self_obj, {}, argv[0][3]]']], :PUBLIC, :STATIC, :CONSTANT],
+        '_getat'=> [[:FUNCTION, nil, [:BUILD_IN, 'return self_obj[3][argv[0][3]]']], :PUBLIC, :DYNAMIC, :CONSTANT],
+        '_setat'=> [[:FUNCTION, nil, [:BUILD_IN, 'self_obj[3][argv[0][3]] = argv[1];return argv[1]']], :PUBLIC, :DYNAMIC, :CONSTANT]
     }]
     @broke = false
     @returned = false
@@ -75,8 +79,56 @@ class Radius
         end
         return result
 
-      # 代入式
-      when "="
+      when :VARIABLE # 変数にアクセス
+        var_name = tree[2][1]
+        if tree[1] # 上位のオブジェクトを調べる
+          obj = evaluate(tree[1], current_env, parent_object)
+          # objには上位のオブジェクトが入っている（すなわち、クラスメソッドやクラス変数を呼ぶ場合はクラス、インスタンスメソッドやインスタンス変数を呼ぶ場合はインスタンスが入っている）
+          case obj[0]
+            when :CLASS # クラス環境を調べる
+              new_env = obj[2]
+              new_var = new_env[var_name]
+              parent_cls = obj[1]
+              while new_var.nil?
+                break if parent_cls.nil? || parent_cls[0] != :CLASS
+                new_env = parent_cls[2]
+                new_var = new_env[var_name]
+                parent_cls = parent_cls[1]
+              end
+              raise("'#{tree[2][1]}'は定義されていない変数です") if new_var.nil?
+              new_obj = new_var[0] # new_objには、下位のオブジェクトが入っている
+              new_obj = new_obj + [obj] if new_obj[0] == :FUNCTION # 関数オブジェクトならば、クラスをくっつけて返す
+              return new_obj
+            when :INSTANCE # インスタンス環境を調べる
+              new_env = obj[2]
+              new_var = (new_env ? new_env[var_name]: nil)
+              cls = obj[1]
+              while new_var.nil?
+                break if cls.nil? || cls[0] != :CLASS
+                new_env = cls[2]
+                new_var = new_env[var_name]
+                cls = cls[1]
+              end
+              raise("'#{tree[2][1]}'は定義されていない変数です") if new_var.nil?
+              new_obj = new_var[0]
+              new_obj = new_obj + [obj] if new_obj[0] == :FUNCTION # 関数オブジェクトならば、インスタンスをくっつけて返す
+              return new_obj
+          end
+        else # 現在の環境を調べる
+          new_var = current_env[var_name]
+          if new_var
+            new_obj = new_var[0]
+            return new_obj
+          else
+            if parent_object
+              return evaluate([:VARIABLE, [:SELF], tree[2]], current_env, parent_object)
+            else
+              raise("'#{var_name}'は定義されていない変数です")
+            end
+          end
+        end
+
+      when "=" # 変数に代入
         # 値
         val = evaluate(tree[5], current_env, parent_object)
         # 変数オプション
@@ -84,7 +136,7 @@ class Radius
         # 保存領域
         address = tree[4]
         case address[0]
-          when :VARIABLE # 普通の変数に代入の場合
+          when :ENV # 普通の変数に代入の場合
             if address[1].nil?
               save_env = current_env
               save_key = address[2][1]
@@ -105,7 +157,7 @@ class Radius
               save_env[save_key][1] = opt[0] if opt[0]
               save_env[save_key][2] = opt[1] if opt[1]
               save_env[save_key][3] = opt[2] if opt[2]
-            else # まだ存在しない場合、オプションまで設定する
+            else # まだ存在しない場合、オプションまで設定する（初回代入）
               opt[0] ||= :NOTHING
               opt[1] ||= :DYNAMIC
               opt[2] ||= (save_key.upcase != save_key ? :VARIABLE : :CONSTANT)
@@ -117,23 +169,7 @@ class Radius
             raise "配列またはハッシュの特定の要素のみを#{opt[2]}にすることはできません。" if opt[2]
             obj = evaluate(address[1], current_env, parent_object)
             index = evaluate(address[2], current_env, parent_object)
-            if obj[0] == :INSTANCE && obj[1] == @list_class
-              if index[0] == :INSTANCE && index[1] == @number_class
-                (index[3] - obj[3].length).times do obj[3] << @null_obj end # 要素数より多いインデックスが与えられた場合、その間をnullで埋める
-                obj[3][index[3]] = val
-              else
-                raise "配列のインデックスは数字でなければなりません"
-              end
-            elsif obj[0] == :INSTANCE && obj[1] == @hash_class
-              if (index[0] == :INSTANCE && index[1] == @number_class) ||
-                 (index[0] == :INSTANCE && index[1] == @string_class)
-                obj[3][index[3]] = val
-              else
-                raise "ハッシュのキーは数字または文字列でなければなりません"
-              end
-            else
-              raise "リストまたはハッシュではないオブジェクトです"
-            end
+            evaluate([:FUNC_CALL, [:VARIABLE, obj, [:IDENTIFIER, "_setat"]], [index, val]], current_env, parent_object)
         end
         return val
 
@@ -230,58 +266,6 @@ class Radius
         obj[1] = obj[1][1]
         return obj
 
-      when :VARIABLE # 変数にアクセス
-        var_name = tree[2][1]
-        if tree[1]
-          # 上位のオブジェクトを調べる
-          obj = evaluate(tree[1], current_env, parent_object)
-          # objには上位のオブジェクトが入っている（すなわち、クラスメソッドやクラス変数を呼ぶ場合はクラス、インスタンスメソッドやインスタンス変数を呼ぶ場合はインスタンスが入っている）
-          case obj[0]
-            when :CLASS # クラス環境を調べる
-              new_env = obj[2]
-              new_var = new_env[var_name]
-              parent_cls = obj[1]
-              while new_var.nil?
-                break if parent_cls.nil? || parent_cls[0] != :CLASS
-                new_env = parent_cls[2]
-                new_var = new_env[var_name]
-                parent_cls = parent_cls[1]
-              end
-              raise("'#{tree[2][1]}'は定義されていない変数です") if new_var.nil?
-              new_obj = new_var[0] # new_objには、下位のオブジェクトが入っている
-              new_obj = new_obj + [obj] if new_obj[0] == :FUNCTION # 関数オブジェクトならば、クラスをくっつけて返す
-              return new_obj
-            when :INSTANCE # インスタンス環境を調べる
-              new_env = obj[2]
-              new_var = (new_env ? new_env[var_name]: nil)
-              cls = obj[1]
-              while new_var.nil?
-                break if cls.nil? || cls[0] != :CLASS
-                new_env = cls[2]
-                new_var = new_env[var_name]
-                cls = cls[1]
-              end
-              raise("'#{tree[2][1]}'は定義されていない変数です") if new_var.nil?
-              new_obj = new_var[0]
-              new_obj = new_obj + [obj] if new_obj[0] == :FUNCTION # 関数オブジェクトならば、インスタンスをくっつけて返す
-              return new_obj
-          end
-        else # 現在の環境を調べる
-          new_var = current_env[var_name]
-          if new_var
-            new_obj = new_var[0]
-            return new_obj
-          else
-            if parent_object
-              return evaluate([:VARIABLE, [:SELF], tree[2]], current_env, parent_object)
-            else
-              raise("'#{var_name}'は定義されていない変数です")
-            end
-          end
-        end
-      when :INDEX
-        return evaluate([:FUNC_CALL, [:VARIABLE, tree[1], [:IDENTIFIER, "_index"]], [tree[2]]], current_env, parent_object)
-
       when :FUNC_CALL
         # 関数を取得
         function = evaluate(tree[1], current_env, parent_object)
@@ -321,7 +305,7 @@ class Radius
         return cls
 
       when :BUILD_IN
-        env = current_env #環境
+        env = current_env # 環境
         self_obj = parent_object  # self
         argv = current_env['_argv'][3] # 引数の配列
         return eval(tree[1])

@@ -48,8 +48,8 @@ class RadiusParser
     var_assign  : access_md static_md const_md var_def '=' expr         {result = ['=', val[0], val[1], val[2], val[3], val[5]]}
                 | var_def '=' expr                                      {result = ['=', nil, nil, nil, val[0], val[2]]}
 
-    var_def     : expr '.' identifier                                   {result = [:VARIABLE, val[0], val[2]]}
-                | identifier                                            {result = [:VARIABLE, nil, val[0]]}
+    var_def     : expr '.' identifier                                   {result = [:ENV, val[0], val[2]]}
+                | identifier                                            {result = [:ENV, nil, val[0]]}
                 | expr '[' expr ']'                                     {result = [:INDEX, val[0], val[2]]}
 
     access_md   :                                                       {result = nil}
@@ -82,7 +82,7 @@ class RadiusParser
                 | '!' expr                                              {result = [:FUNC_CALL, [:VARIABLE, val[1], [:IDENTIFIER, "_not"]], []]}
 
                 | expr '(' args ')'                                     {result = [:FUNC_CALL, val[0], val[2]]}
-                | expr '[' expr ']'                                     {result = [:INDEX, val[0], val[2]]}
+                | expr '[' expr ']'                                     {result = [:FUNC_CALL, [:VARIABLE, val[0], [:IDENTIFIER, "_getat"]], [val[2]]]}
 
 
                 | primary
