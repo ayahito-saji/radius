@@ -6,30 +6,30 @@ class Radius
   def analysis
     parser = RadiusParser.new
     @structure = parser.parse(@code)
-    PP.pp(@structure, $>, 1)
+    p @structure
   end
   def process
     @null_obj = [:INSTANCE, nil, nil]
     # 基本クラスの設定(Object, Number, String, Boolean, List, Hash)
     @object_class = [:CLASS, nil, {
-        'new'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, self_obj, {}]']], :PUBLIC, :STATIC, :CONSTANT]
+        'new'=> [[:FUNCTION, nil, [:BUILD_IN, 'instance = [:INSTANCE, self_obj, {}];evaluate([:FUNC_CALL, [:VARIABLE, [:SELF], [:IDENTIFIER, "init"]], argv], env, instance);return instance']], :PUBLIC, :STATIC, :CONSTANT],
+        'init'=> [[:FUNCTION, nil, nil], :PUBLIC, :STATIC, :CONSTANT]
     }]
     @number_class = [:CLASS, @object_class, {
         'new'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, self_obj, {}, argv[0][3]]']], :PUBLIC, :STATIC, :CONSTANT],
-        '_add'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @number_class, nil, self_obj[3]+argv[0][3]] if(argv[0][1] == :INSTANCE && argv[0][2] == @number_class);return [:INSTANCE, @string_class, nil, self_obj[3].to_s+argv[0][3]] if(argv[0][1] == :INSTANCE && argv[0][2] == @string_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
-        '_sub'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @number_class, nil, self_obj[3]-argv[0][3]] if(argv[0][1] == :INSTANCE && argv[0][2] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
-        '_mul'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @number_class, nil, self_obj[3]*argv[0][3]] if(argv[0][1] == :INSTANCE && argv[0][2] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
-        '_div'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @number_class, nil, self_obj[3]/argv[0][3]] if(argv[0][1] == :INSTANCE && argv[0][2] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
-        '_mod'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @number_class, nil, self_obj[3]%argv[0][3]] if(argv[0][1] == :INSTANCE && argv[0][2] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
+        '_add'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @number_class, nil, self_obj[3]+argv[0][3]] if(argv[0][0] == :INSTANCE && argv[0][1] == @number_class);return [:INSTANCE, @string_class, nil, self_obj[3].to_s+argv[0][3]] if(argv[0][0] == :INSTANCE && argv[0][1] == @string_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
+        '_sub'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @number_class, nil, self_obj[3]-argv[0][3]] if(argv[0][0] == :INSTANCE && argv[0][1] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
+        '_mul'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @number_class, nil, self_obj[3]*argv[0][3]] if(argv[0][0] == :INSTANCE && argv[0][1] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
+        '_div'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @number_class, nil, self_obj[3].to_f/argv[0][3]] if(argv[0][0] == :INSTANCE && argv[0][1] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
+        '_mod'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @number_class, nil, self_obj[3]%argv[0][3]] if(argv[0][0] == :INSTANCE && argv[0][1] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
         '_eq' => [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]==argv[0][3]];']], :PUBLIC, :DYNAMIC, :CONSTANT],
         '_neq'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]!=argv[0][3]];']], :PUBLIC, :DYNAMIC, :CONSTANT],
-        '_gt' => [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]>argv[0][3]] if(argv[0][1] == :INSTANCE && argv[0][2] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
-        '_lt' => [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]<argv[0][3]] if(argv[0][1] == :INSTANCE && argv[0][2] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
-        '_gte'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]>=argv[0][3]] if(argv[0][1] == :INSTANCE && argv[0][2] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
-        '_lte'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]<=argv[0][3]] if(argv[0][1] == :INSTANCE && argv[0][2] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
+        '_gt' => [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]>argv[0][3]] if(argv[0][0] == :INSTANCE && argv[0][1] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
+        '_lt' => [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]<argv[0][3]] if(argv[0][0] == :INSTANCE && argv[0][1] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
+        '_gte'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]>=argv[0][3]] if(argv[0][0] == :INSTANCE && argv[0][1] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
+        '_lte'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]<=argv[0][3]] if(argv[0][0] == :INSTANCE && argv[0][1] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
     }]
     @string_class = [:CLASS, @object_class, {
-
         'new'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, self_obj, {}, argv[0][3]]']], :PUBLIC, :STATIC, :CONSTANT],
         '_add'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @string_class, nil, self_obj[3]+argv[0][3].to_s];']], :PUBLIC, :DYNAMIC, :CONSTANT],
     }]
@@ -61,8 +61,10 @@ class Radius
         'Hash'=> [@hash_class, :PUBLIC, :DYNAMIC, :CONSTANT],
     }
     kernel = [:INSTANCE, nil, {}]
-    puts("RESULT: #{evaluate(@structure, env, kernel)}")
-    puts "Env: #{env}"
+    p "Evaluate"
+    p evaluate(@structure, env, kernel)
+    p "Env"
+    p  env
   end
   def evaluate(tree, current_env, parent_object)
     if tree.nil?
@@ -249,6 +251,8 @@ class Radius
         return tree
       when :FUNCTION
         return tree
+      when :CLASS
+        return tree
 
       when :BREAK
         @broke = true
@@ -301,6 +305,9 @@ class Radius
         class_env = {}
         evaluate(tree[2], class_env, nil)
         expands_cls = tree[1] ? evaluate(tree[1], current_env, parent_object): @object_class
+        raise "Numberクラスから継承することはできません" if expands_cls == @number_class
+        raise "Stringクラスから継承することはできません" if expands_cls == @string_class
+        raise "Booleanクラスから継承することはできません" if expands_cls == @boolean_class
         cls = [:CLASS, expands_cls, class_env]
         return cls
 
@@ -310,16 +317,6 @@ class Radius
         argv = current_env['_argv'][3] # 引数の配列
         return eval(tree[1])
 
-      when :NEW
-        cls = evaluate(tree[1], current_env, parent_object)
-        args = tree[2]
-        raise "クラス以外からインスタンスを生成できません" if cls[0] != :CLASS
-        instance = [:INSTANCE, cls, {}]
-        if cls[2]["init"]
-          function = cls[2]["init"][0] + [instance]
-          evaluate([:FUNC_CALL, function, args], current_env, parent_object)
-        end
-        return instance
     end
   end
   def run
