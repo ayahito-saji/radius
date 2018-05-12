@@ -194,6 +194,7 @@ function(仮引数){
 最初から定義されているStringクラスのインスタンスです。
 ```
 "Sample String"
+'Sample String'
 ```
 
 ##### 真偽値(boolean)

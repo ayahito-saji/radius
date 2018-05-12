@@ -1,0 +1,24 @@
+ExClass = class{
+    init = function{
+        suits = ['S', 'H', 'C', 'D']
+        i = 0
+        loop{
+            if(i>=4){
+                print("end")
+                break
+            }
+            j = 1
+            loop{
+                print(suits[i]+" "+j)
+                j = j+1
+                if(j>13){
+                    break
+                }
+            }
+            i = i+1
+        }
+    }
+}
+
+ExClass.new()
+print("おわり！")

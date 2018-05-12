@@ -16,30 +16,22 @@ Deck = class(List){
 # トランプデッキクラス
 PlayingCardDeck = class(Deck){
     init = function(){
-        suits = ['S', 'H', 'C', 'D']
-        i = 0
+        i = 1
         loop{
-            if(i>=4){
+            self[i] = PlayingCard.new('S', i)
+            i = i+1
+            if(i>100){
                 break
             }
-            j = 0
-            loop{
-                self[i*13+j] = PlayingCard.new(suits[i], j+1)
-                j = j+1
-                if(j>=13){
-                    break
-                }
-            }
-            i = i+1
         }
     }
     toString = function(){
-        i = 0
+        i = 1
         str = "["
         loop{
             str = str + self[i].toString()
             i = i + 1
-            if(i>=13*4){
+            if(i>100){
                 break
             }else{
                 str = str + ", "
@@ -49,5 +41,4 @@ PlayingCardDeck = class(Deck){
         return str
     }
 }
-deck = PlayingCardDeck.new()
-print(deck.toString())
+print(PlayingCardDeck.new())

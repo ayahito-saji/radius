@@ -16,7 +16,7 @@ class Radius
         'init'=> [[:FUNCTION, nil, nil], :PUBLIC, :STATIC, :CONSTANT]
     }]
     @number_class = [:CLASS, @object_class, {
-        'new'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, self_obj, {}, argv[0][3]]']], :PUBLIC, :STATIC, :CONSTANT],
+        'new'=> [[:FUNCTION, nil, [:BUILD_IN, 'instance = [:INSTANCE, self_obj, {}, argv[0][3]];evaluate([:FUNC_CALL, [:VARIABLE, [:SELF], [:IDENTIFIER, "init"]], argv], env, instance);return instance;']], :PUBLIC, :STATIC, :CONSTANT],
         '_add'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @number_class, nil, self_obj[3]+argv[0][3]] if(argv[0][0] == :INSTANCE && argv[0][1] == @number_class);return [:INSTANCE, @string_class, nil, self_obj[3].to_s+argv[0][3]] if(argv[0][0] == :INSTANCE && argv[0][1] == @string_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
         '_sub'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @number_class, nil, self_obj[3]-argv[0][3]] if(argv[0][0] == :INSTANCE && argv[0][1] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
         '_mul'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @number_class, nil, self_obj[3]*argv[0][3]] if(argv[0][0] == :INSTANCE && argv[0][1] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
@@ -28,31 +28,34 @@ class Radius
         '_lt' => [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]<argv[0][3]] if(argv[0][0] == :INSTANCE && argv[0][1] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
         '_gte'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]>=argv[0][3]] if(argv[0][0] == :INSTANCE && argv[0][1] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
         '_lte'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]<=argv[0][3]] if(argv[0][0] == :INSTANCE && argv[0][1] == @number_class);']], :PUBLIC, :DYNAMIC, :CONSTANT],
+        'toString'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @string_class, nil, self_obj[3].to_s]']], :PUBLIC, :DYNAMIC, :CONSTANT]
     }]
     @string_class = [:CLASS, @object_class, {
-        'new'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, self_obj, {}, argv[0][3]]']], :PUBLIC, :STATIC, :CONSTANT],
+        'new'=> [[:FUNCTION, nil, [:BUILD_IN, 'instance = [:INSTANCE, self_obj, {}, argv[0][3]];evaluate([:FUNC_CALL, [:VARIABLE, [:SELF], [:IDENTIFIER, "init"]], argv], env, instance);return instance;']], :PUBLIC, :STATIC, :CONSTANT],
         '_add'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @string_class, nil, self_obj[3]+argv[0][3].to_s];']], :PUBLIC, :DYNAMIC, :CONSTANT],
+        'toNumber'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @string_class, nil, self_obj[3].to_f]']], :PUBLIC, :DYNAMIC, :CONSTANT],
+        'toString'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @string_class, nil, self_obj[3].to_s]']], :PUBLIC, :DYNAMIC, :CONSTANT]
     }]
     @boolean_class = [:CLASS, @object_class, {
-        'new'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, self_obj, {}, argv[0][3]]']], :PUBLIC, :STATIC, :CONSTANT],
+        'new'=> [[:FUNCTION, nil, [:BUILD_IN, 'instance = [:INSTANCE, self_obj, {}, argv[0][3]];evaluate([:FUNC_CALL, [:VARIABLE, [:SELF], [:IDENTIFIER, "init"]], argv], env, instance);return instance;']], :PUBLIC, :STATIC, :CONSTANT],
         '_not'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, !self_obj[3]]']], :PUBLIC, :STATIC, :CONSTANT],
         '_and'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]&&argv[0][3]]']], :PUBLIC, :STATIC, :CONSTANT],
         '_or' => [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]||argv[0][3]]']], :PUBLIC, :STATIC, :CONSTANT],
     }]
     @list_class = [:CLASS, @object_class, {
-        'new'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, self_obj, {}, argv]']], :PUBLIC, :STATIC, :CONSTANT],
+        'new'=> [[:FUNCTION, nil, [:BUILD_IN, 'instance = [:INSTANCE, self_obj, {}, argv];evaluate([:FUNC_CALL, [:VARIABLE, [:SELF], [:IDENTIFIER, "init"]], argv], env, instance);return instance;']], :PUBLIC, :STATIC, :CONSTANT],
         '_getat'=> [[:FUNCTION, nil, [:BUILD_IN, 'return self_obj[3][argv[0][3]]']], :PUBLIC, :DYNAMIC, :CONSTANT],
         '_setat'=> [[:FUNCTION, nil, [:BUILD_IN, '(argv[0][3] - self_obj[3].length).times do self_obj[3] << @null_obj end;self_obj[3][argv[0][3]] = argv[1];return argv[1]']], :PUBLIC, :DYNAMIC, :CONSTANT]
     }]
     @hash_class = [:CLASS, @object_class, {
-        'new'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, self_obj, {}, argv[0][3]]']], :PUBLIC, :STATIC, :CONSTANT],
+        'new'=> [[:FUNCTION, nil, [:BUILD_IN, 'instance = [:INSTANCE, self_obj, {}, argv[0][3]];evaluate([:FUNC_CALL, [:VARIABLE, [:SELF], [:IDENTIFIER, "init"]], argv], env, instance);return instance;']], :PUBLIC, :STATIC, :CONSTANT],
         '_getat'=> [[:FUNCTION, nil, [:BUILD_IN, 'return self_obj[3][argv[0][3]]']], :PUBLIC, :DYNAMIC, :CONSTANT],
         '_setat'=> [[:FUNCTION, nil, [:BUILD_IN, 'self_obj[3][argv[0][3]] = argv[1];return argv[1]']], :PUBLIC, :DYNAMIC, :CONSTANT]
     }]
     @broke = false
     @returned = false
     env = {
-        'print'=> [[:FUNCTION, [[:IDENTIFIER, 'obj']], [:BUILD_IN, 'puts(env["obj"][0][3]);return @null_obj']], :PUBLIC, :DYNAMIC, :CONSTANT],
+        'print'=> [[:FUNCTION, [[:IDENTIFIER, 'obj']], [:BUILD_IN, 'puts(argv[0][3].to_s);return @null_obj;']], :PUBLIC, :DYNAMIC, :CONSTANT],
         'input'=> [[:FUNCTION, [], [:BUILD_IN, 'return [:INSTANCE, :STRING, nil, gets.chomp]']], :PUBLIC, :DYNAMIC, :CONSTANT],
         'Object'=> [@object_class, :PUBLIC, :DYNAMIC, :CONSTANT],
         'String'=> [@string_class, :PUBLIC, :DYNAMIC, :CONSTANT],
@@ -63,8 +66,8 @@ class Radius
     kernel = [:INSTANCE, nil, {}]
     p "Evaluate"
     p evaluate(@structure, env, kernel)
-    p "Env"
-    p  env
+    #p "Env"
+    #p  env
   end
   def evaluate(tree, current_env, parent_object)
     if tree.nil?
@@ -208,12 +211,17 @@ class Radius
       # 構文
       when :LOOP # loop構文
         @broke = false
+        #i = 0
         while true
+          #p i
+          #i += 1
           result = evaluate(tree[1], current_env, parent_object)
           if @broke
+            #puts("breakされたので抜けました")
             @broke = false
             break
           end
+          #puts "result: #{result}"
           return result if @returned
         end
         return @null_obj
@@ -221,8 +229,8 @@ class Radius
       when :WHILE
         while true
           condition = evaluate(tree[1], current_env, parent_object)
-          if (condition[0] == :INSTANCE && condition[1] == :BOOLEAN && condition[3] == false) ||
-              (condition[0] == :NULL)
+          if (condition[0] == :INSTANCE && condition[1] == @boolean_class && condition[3] == false) ||
+             (condition[0] == @null_obj)
             break
           end
           result = evaluate(tree[2], current_env, parent_object)
@@ -233,12 +241,12 @@ class Radius
           return result if @returned
         end
         return @null_obj
-      when :IF # if構文
+      when :IF
         tree[1].each do |if_stmt|
           if if_stmt
             condition = evaluate(if_stmt[0], current_env, parent_object)
-            unless (condition[0] == :INSTANCE && condition[1] == :BOOLEAN && condition[3] == false) ||
-                (condition[0] == :NULL) # falseまたはnullでないときはtrue
+            unless (condition[0] == :INSTANCE && condition[1] == @boolean_class && condition[3] == false) ||
+                (condition[0] == @null_obj) # falseまたはnullでないときはtrue
               result = evaluate(if_stmt[1], current_env, parent_object)
               return result if @returned
               break
@@ -246,6 +254,9 @@ class Radius
           end
         end
         return result ? result : @null_obj
+      when :FOR
+        evaluate(tree[1], current_env, parent_object)
+
 
       when :INSTANCE
         return tree
@@ -255,6 +266,7 @@ class Radius
         return tree
 
       when :BREAK
+        #puts "システムメッセージ：breakされました。"
         @broke = true
         return @null_obj
       when :RETURN

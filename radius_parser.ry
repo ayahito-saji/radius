@@ -43,7 +43,7 @@ class RadiusParser
 
     while_stmt  : WHILE expr '{' statements '}'                         {result = [:WHILE, val[1], val[3]]}
 
-    for_stmt    : FOR '(' expr ';' expr ';' expr ')' '{' statements '}' {result = [:FOR, val[2], val[4], val[6], val[9]]}
+    for_stmt    : FOR '(' statement ';' expr ';' statement ')' '{' statements '}' {result = [:FOR, val[2], val[4], val[6], val[9]]}
 
     var_assign  : access_md static_md const_md var_def '=' expr         {result = ['=', val[0], val[1], val[2], val[3], val[5]]}
                 | var_def '=' expr                                      {result = ['=', nil, nil, nil, val[0], val[2]]}
@@ -169,6 +169,7 @@ def parse(str)
     scanner.scan(/parent/) ?                    @q << [:SUPER, "super"]:
 
     scanner.scan(/\".*?\"/) ?                   @q << [:STRING, scanner.matched[1..-2]] :
+    scanner.scan(/\'.*?\'/) ?                   @q << [:STRING, scanner.matched[1..-2]] :
     scanner.scan(/[a-zA-Z_][a-zA-Z0-9_]*/) ?    @q << [:IDENTIFIER, scanner.matched.to_s] :
     scanner.scan(/([0-9]*\.[0-9]+)/) ?          @q << [:NUMBER, scanner.matched.to_f] :
     scanner.scan(/(0|[1-9][0-9]*)/) ?           @q << [:NUMBER, scanner.matched.to_i] :
@@ -188,6 +189,9 @@ def parse(str)
     scanner.scan(/<=/) ?                        @q << ["<=", "<="] :
     scanner.scan(/>/) ?                         @q << [">", ">"] :
     scanner.scan(/</) ?                         @q << ["<", "<"] :
+
+    scanner.scan(/\+\+/) ?                      @q << ["++", "++"] :
+    scanner.scan(/\-\-/) ?                      @q << ["--", "--"] :
 
     scanner.scan(/\&\&/) ?                      @q << ["&&", "&&"] :
     scanner.scan(/\|\|/) ?                      @q << ["||", "||"] :
