@@ -32,7 +32,7 @@ class Radius
     }]
     @string_class = [:CLASS, @object_class, {
         'new'=> [[:FUNCTION, nil, [:BUILD_IN, 'instance = [:INSTANCE, self_obj, {}, argv[0][3]];evaluate([:FUNC_CALL, [:VARIABLE, [:SELF], [:IDENTIFIER, "init"]], argv], env, instance);return instance;']], :PUBLIC, :STATIC, :CONSTANT],
-        '_add'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @string_class, nil, self_obj[3]+argv[0][3].to_s];']], :PUBLIC, :DYNAMIC, :CONSTANT],
+        '_add'=> [[:FUNCTION, nil, [:BUILD_IN, 'other = evaluate([:FUNC_CALL, [:VARIABLE, argv[0], [:IDENTIFIER, "toString"]], []], env, self_obj);return [:INSTANCE, @string_class, nil, self_obj[3]+other[3].to_s];']], :PUBLIC, :DYNAMIC, :CONSTANT],
         'toNumber'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @string_class, nil, self_obj[3].to_f]']], :PUBLIC, :DYNAMIC, :CONSTANT],
         'toString'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @string_class, nil, self_obj[3].to_s]']], :PUBLIC, :DYNAMIC, :CONSTANT]
     }]
@@ -41,6 +41,7 @@ class Radius
         '_not'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, !self_obj[3]]']], :PUBLIC, :STATIC, :CONSTANT],
         '_and'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]&&argv[0][3]]']], :PUBLIC, :STATIC, :CONSTANT],
         '_or' => [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @boolean_class, nil, self_obj[3]||argv[0][3]]']], :PUBLIC, :STATIC, :CONSTANT],
+        'toString'=> [[:FUNCTION, nil, [:BUILD_IN, 'return [:INSTANCE, @string_class, nil, self_obj[3].to_s]']], :PUBLIC, :DYNAMIC, :CONSTANT]
     }]
     @list_class = [:CLASS, @object_class, {
         'new'=> [[:FUNCTION, nil, [:BUILD_IN, 'instance = [:INSTANCE, self_obj, {}, argv];evaluate([:FUNC_CALL, [:VARIABLE, [:SELF], [:IDENTIFIER, "init"]], argv], env, instance);return instance;']], :PUBLIC, :STATIC, :CONSTANT],
@@ -55,11 +56,12 @@ class Radius
     @broke = false
     @returned = false
     env = {
-        'print'=> [[:FUNCTION, [[:IDENTIFIER, 'obj']], [:BUILD_IN, 'puts(argv[0][3].to_s);return @null_obj;']], :PUBLIC, :DYNAMIC, :CONSTANT],
+        'print'=> [[:FUNCTION, [[:IDENTIFIER, 'obj']], [:BUILD_IN, 'puts(evaluate([:FUNC_CALL, [:VARIABLE, argv[0], [:IDENTIFIER, "toString"]], []], env, self_obj)[3].to_s);return @null_obj;']], :PUBLIC, :DYNAMIC, :CONSTANT],
         'input'=> [[:FUNCTION, [], [:BUILD_IN, 'return [:INSTANCE, :STRING, nil, gets.chomp]']], :PUBLIC, :DYNAMIC, :CONSTANT],
         'Object'=> [@object_class, :PUBLIC, :DYNAMIC, :CONSTANT],
-        'String'=> [@string_class, :PUBLIC, :DYNAMIC, :CONSTANT],
         'Number'=> [@number_class, :PUBLIC, :DYNAMIC, :CONSTANT],
+        'String'=> [@string_class, :PUBLIC, :DYNAMIC, :CONSTANT],
+        'Boolean'=> [@boolean_class, :PUBLIC, :DYNAMIC, :CONSTANT],
         'List'=> [@list_class, :PUBLIC, :DYNAMIC, :CONSTANT],
         'Hash'=> [@hash_class, :PUBLIC, :DYNAMIC, :CONSTANT],
     }
@@ -338,7 +340,7 @@ class Radius
   def debug_env(env, ind)
     code = "#{" " * ind}環境ID[#{env.__id__}]{\n"
     env.each_key do |k|
-      code += "#{" " * (ind+4)}#{k} #{debug_obj(env[k][0], ind)}\n"
+      code += "#{" " * (ind+4)}#{k}#{debug_obj(env[k][0], ind)}\n"
     end
     code += "#{" " * ind}}\n"
     return code
@@ -350,19 +352,19 @@ class Radius
     case obj[0]
       when :CLASS
         if(obj == @object_class || obj == @number_class || obj == @string_class || obj == @list_class || obj == @hash_class)
-          "クラス(#{obj.__id__} 親:#{obj[1].__id__} )"
+          "クラス (#{obj.__id__} 親:#{obj[1].__id__})"
         else
-          "クラス(#{obj.__id__} 親:#{obj[1].__id__} )\n#{obj[2] ? debug_env(obj[2], ind+8) : '環境なし'}"
+          "クラス (#{obj.__id__} 親:#{obj[1].__id__})\n#{obj[2] ? debug_env(obj[2], ind+8) : '環境なし'}"
         end
       when :INSTANCE
         if obj[2]
-          return "インスタンス(#{obj.__id__})\n#{debug_env(obj[2], ind+8)}#{obj[3] ? (", "+obj[3].to_s): ""}"
+          return "インスタンス (#{obj.__id__})\n#{debug_env(obj[2], ind+8)}#{obj[3] ? (", "+obj[3].to_s): ""}"
         else
-          return "インスタンス(#{obj.__id__})#{obj[3] ? (", "+obj[3].to_s): ""}"
+          return "インスタンス (#{obj.__id__})#{obj[3] ? (", "+obj[3].to_s): ""}"
         end
 
       when :FUNCTION
-        return "関数 #{obj.__id__}"
+        return "関数 (#{obj.__id__})"
     end
   end
   def run

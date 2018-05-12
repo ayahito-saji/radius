@@ -29,7 +29,7 @@ PlayingCardDeck = class(Deck){
         i = 1
         str = "["
         loop{
-            str = str + self[i].toString()
+            str = str + self[i]
             i = i + 1
             if(i>100){
                 break
@@ -41,4 +41,4 @@ PlayingCardDeck = class(Deck){
         return str
     }
 }
-print(PlayingCardDeck.new().toString())
+print(PlayingCardDeck.new())
