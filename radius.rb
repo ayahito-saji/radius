@@ -64,10 +64,10 @@ class Radius
         'Hash'=> [@hash_class, :PUBLIC, :DYNAMIC, :CONSTANT],
     }
     kernel = [:INSTANCE, nil, {}]
-    p "Evaluate"
-    p evaluate(@structure, env, kernel)
-    #p "Env"
-    #p  env
+    puts "Evaluate"
+    puts debug_obj(evaluate(@structure, env, kernel), 0)
+    puts "Env"
+    puts debug_env(env, 0)
   end
   def evaluate(tree, current_env, parent_object)
     if tree.nil?
@@ -145,6 +145,7 @@ class Radius
             if address[1].nil?
               save_env = current_env
               save_key = address[2][1]
+              #puts "#{save_key} = #{debug_obj(val, 0)} \n#{debug_env(current_env, 0)}"
             else
               obj = evaluate(address[1], current_env, parent_object)
               save_key = address[2][1]
@@ -157,6 +158,7 @@ class Radius
               end
             end
             if save_env[save_key] # すでに存在する場合、オプションは変更しない
+              save_env[save_key] = save_env[save_key].clone
               raise "定数#{save_key}の値を変更できません" if save_env[save_key][3] == :CONSTANT
               save_env[save_key][0] = val
               save_env[save_key][1] = opt[0] if opt[0]
@@ -289,7 +291,8 @@ class Radius
         new_parent_object = function[3] ? function[3] : parent_object
         if function && function[0] == :FUNCTION
           # 引数を取得
-          env = Marshal.load(Marshal.dump(current_env))
+          #env = Marshal.load(Marshal.dump(current_env))
+          env = current_env.clone()
           args = []
           tree[2].length.times do |i|
             args << evaluate(tree[2][i], env, parent_object)
@@ -307,6 +310,7 @@ class Radius
           # 関数を実行する
           result = evaluate(function[2], env, new_parent_object)
           @returned = false
+          #puts "#{function.__id__} 関数呼び出し後の環境\n#{debug_env(env, 4)}"
           return result
         else
           raise("定義されていない関数、または関数でないオブジェクトが関数として呼び出されました")
@@ -329,6 +333,36 @@ class Radius
         argv = current_env['_argv'][3] # 引数の配列
         return eval(tree[1])
 
+    end
+  end
+  def debug_env(env, ind)
+    code = "#{" " * ind}環境ID[#{env.__id__}]{\n"
+    env.each_key do |k|
+      code += "#{" " * (ind+4)}#{k} #{debug_obj(env[k][0], ind)}\n"
+    end
+    code += "#{" " * ind}}\n"
+    return code
+  end
+  def debug_obj(obj, ind)
+    if obj == @null_obj
+      return "[NULLオブジェクト(#{obj.__id__})]"
+    end
+    case obj[0]
+      when :CLASS
+        if(obj == @object_class || obj == @number_class || obj == @string_class || obj == @list_class || obj == @hash_class)
+          "クラス(#{obj.__id__} 親:#{obj[1].__id__} )"
+        else
+          "クラス(#{obj.__id__} 親:#{obj[1].__id__} )\n#{obj[2] ? debug_env(obj[2], ind+8) : '環境なし'}"
+        end
+      when :INSTANCE
+        if obj[2]
+          return "インスタンス(#{obj.__id__})\n#{debug_env(obj[2], ind+8)}#{obj[3] ? (", "+obj[3].to_s): ""}"
+        else
+          return "インスタンス(#{obj.__id__})#{obj[3] ? (", "+obj[3].to_s): ""}"
+        end
+
+      when :FUNCTION
+        return "関数 #{obj.__id__}"
     end
   end
   def run
